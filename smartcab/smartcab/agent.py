@@ -122,6 +122,8 @@ class LearningAgent(Agent):
         # Otherwise, choose an action with the highest Q-value for the current
         # state
 
+        # SOURCE :
+        # https://studywolf.wordpress.com/2012/11/25/reinforcement-learning-q-learning-and-exploration/
         if not self.learning:
             action = random.choice(self.valid_actions)
         else:
@@ -130,9 +132,9 @@ class LearningAgent(Agent):
             else:
                 valid_actions = []
                 maxQ = self.get_maxQ(state)
-                for act in self.Q[state]:
-                    if maxQ == self.Q[state][act]:
-                        valid_actions.append(act)
+                for action in self.Q[state]:
+                    if maxQ == self.Q[state][action]:
+                        valid_actions.append(action)
                 action = random.choice(valid_actions)
 
         return action

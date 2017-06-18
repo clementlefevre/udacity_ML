@@ -66,3 +66,6 @@ target/
 
 #Zip file
 *.gz
+
+#Image folder
+image-classification/cifar-10-batches-py/

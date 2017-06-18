@@ -3,6 +3,7 @@ import numpy as np
 import tensorflow as tf
 import random
 from unittest.mock import MagicMock
+from IPython.core.debugger import Tracer
 
 
 def _print_success_message():
@@ -50,6 +51,7 @@ def test_one_hot_encode(one_hot_encode):
     test_shape = np.random.choice(range(1000))
     test_numbers = np.random.choice(range(10), test_shape)
     one_hot_out = one_hot_encode(test_numbers)
+    #Tracer()()
 
     assert type(one_hot_out).__module__ == np.__name__,\
         'Not Numpy Object'
@@ -62,6 +64,7 @@ def test_one_hot_encode(one_hot_encode):
     test_indices = np.random.choice(len(test_numbers), n_encode_tests)
     labels = [test_pairs[test_i][0] for test_i in test_indices]
     enc_labels = np.array([test_pairs[test_i][1] for test_i in test_indices])
+    
     new_enc_labels = one_hot_encode(labels)
 
     assert np.array_equal(enc_labels, new_enc_labels),\

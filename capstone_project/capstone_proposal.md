@@ -54,7 +54,7 @@ Thus we will stick on the linear regression as a benchmark to evaluate our own m
 As we are in the context of the regression problem, i will use the Root Mean Squared Error metrics (RMSE) of the occupancy rate as the main metrics.
 
 The RMSE is defined as :
-The translation $[\![e]\!]$ given by
+
 \begin{align*}
 RMSE = {\sqrt {\frac{1} {N}{\sum\limits_{i = 1}^N {(y_{i} - \bar{y}_{i} } })^{2} } }
 \end{align*}

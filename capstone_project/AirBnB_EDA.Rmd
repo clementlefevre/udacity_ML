@@ -1,0 +1,57 @@
+---
+title: "AirBnB Exploratory Data Analysis"
+output:
+  html_document: default
+  html_notebook: default
+---
+
+
+```{r}
+library(tidyverse)
+library(gridExtra)
+```
+
+```{r}
+df_listing_raw <-read.csv('data/listing_with_reviews_PCA.csv')
+dim(df_listing_raw)
+```
+### Drop the exceptional renters (no availability for the next 90 days and no reviews)
+```{r}
+
+df_listing<-df_listing_raw %>% filter(reviews_per_month>0.5 & availability_90>0) %>% select(-text_experiences_offered)
+dim(df_listing)
+```
+
+```{r}
+airBColor<- '#ff5a5f'
+ggplot(df_listing,aes(x=availability_90))+ geom_histogram(bins=100,fill=airBColor)+ggtitle("Full Appartment availability 90 coming days")
+
+ggplot(df_listing,aes(x=last_review))+ geom_histogram(bins=100,fill=airBColor)+ggtitle("last review age (days)")
+
+
+
+ggplot(df_listing ,aes(x=reviews_per_month))+ geom_histogram(bins=30, fill=airBColor)+ggtitle("Full Appartment reviews per Month")
+
+
+```
+
+```{r}
+ggplot(df_listing ,aes(x=availability_90,y=reviews_per_month))+geom_jitter(alpha=.2,color=airBColor)+geom_smooth(method = 'lm')
+ggplot(df_listing ,aes(x=as.factor(availability_90),y=reviews_per_month))+geom_boxplot()
+```
+### Rough linear model
+
+```{r}
+colos <- grep('amenities|PC',colnames(df_listing),value = TRUE)
+colos<-paste0(colos, collapse="+")
+formula <- paste("availability_90 ~ ",colos,sep = "")
+formula
+
+```
+
+```{r}
+lm<- lm(formula,df_listing)
+summary(lm)
+#str(df_listing %>% select(contains('amenities')))
+```
+

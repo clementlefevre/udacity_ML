@@ -1,8 +1,6 @@
 ---
 title: "AirBnB Exploratory Data Analysis"
-output:
-  html_document: default
-  html_notebook: github
+output: github_document
 ---
 
 

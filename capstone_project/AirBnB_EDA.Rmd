@@ -14,16 +14,42 @@ library(broom)
 library(GGally)
 library(ggcorrplot)
 library(reshape2)
+
+airBColor<- '#ff5a5f'
 ```
 
 ```{r}
 df_listing_raw <-read.csv('data/listing_with_reviews_PCA.csv')
 dim(df_listing_raw)
+
+df_listing_raw$amenities__TV <-ifelse(df_listing_raw$amenities__TV>0,1,0)
 ```
-### Drop the exceptional renters (no availability for the next 90 days and no reviews)
+### Drop the occasional renters (no availability for the next 90 days and no reviews)
+
+
+#### Check for data of last review
+```{r}
+ggplot(df_listing_raw,aes(x=availability_90,fill=is.na(last_review)))+ geom_histogram( position="dodge")
+```
+#### Last review vs availability
+
+```{r}
+ggplot(df_listing_raw,aes(x=availability_90,y=last_review,group=availability_90))+geom_boxplot(color=airBColor,fill = NA,alpha=.1)
+
+```
+
+```{r}
+ggplot(df_listing_raw,aes(x=availability_90,y=reviews_per_month))+geom_jitter(color=airBColor,fill = NA,alpha=.2)
+
+ggplot(df_listing_raw %>% filter(!is.na(last_review)),aes(x=availability_90,y=reviews_per_month,color+last_review))+geom_jitter(color=airBColor,fill = NA,alpha=.2,size=.5)
+```
+
 ```{r}
 
-df_listing<-df_listing_raw %>% filter(reviews_per_month>0.5 & availability_90>0) %>% select(-text_experiences_offered)
+```
+
+```{r}
+df_listing<-df_listing_raw %>% filter(reviews_per_month>0.5 & availability_90>0 & availability_90<80) %>% select(-text_experiences_offered)
 dim(df_listing)
 ```
 ```{r}
@@ -34,13 +60,9 @@ print (colos_text)
 ```
 
 ```{r}
-airBColor<- '#ff5a5f'
+
 ggplot(df_listing,aes(x=availability_90))+ geom_histogram(bins=100,fill=airBColor)+ggtitle("Full Appartment availability 90 coming days")
-
 ggplot(df_listing,aes(x=last_review))+ geom_histogram(bins=100,fill=airBColor)+ggtitle("last review age (days)")
-
-
-
 ggplot(df_listing ,aes(x=reviews_per_month))+ geom_histogram(bins=30, fill=airBColor)+ggtitle("Full Appartment reviews per Month")
 
 
@@ -50,6 +72,22 @@ ggplot(df_listing ,aes(x=reviews_per_month))+ geom_histogram(bins=30, fill=airBC
 ggplot(df_listing ,aes(x=availability_90,y=reviews_per_month))+geom_jitter(alpha=.2,color=airBColor)+geom_smooth(method = 'lm')
 ggplot(df_listing ,aes(x=as.factor(availability_90),y=reviews_per_month))+geom_boxplot()
 ```
+#### Amenities : select only balanced features
+```{r}
+df_listing_amenities <- df_listing %>% select(contains('amenities_'))
+df_listing_amenities <-df_listing_amenities %>% select(which(colMeans(.) > 0.1 &colMeans(.) <0.9) ) 
+
+
+
+ggplot(data = melt(df_listing_amenities), mapping = aes(x =as.factor(value))) + geom_histogram(bins = 30,stat="count",fill=airBColor) + facet_wrap(~variable, scales = 'fixed') +theme(strip.text.x = element_text(size = 6), axis.text.y = element_text(size=6))
+
+cols_amenies <-colnames(df_listing_amenities)
+cols_amenies
+
+```
+
+
+
 ### Rough linear model
 
 ```{r}
@@ -63,8 +101,8 @@ formula
 ```{r}
 options(max.print=5.5E5)
 lm<- lm(availability_90~.,df_listing%>% select(-one_of(c(colos_text,c('availability_30','availability_60','availability_365','id')))))
-summary(lm)
-top_corr<- tidy(lm) %>% filter(p.value<.05)  %>% top_n(n = -25,wt = p.value) %>%pull(term)
+summary(lm)$adj.r.squared
+top_corr<- tidy(lm) %>% filter(p.value<.05)  %>% top_n(n = -10,wt = p.value) %>%pull(term)
 
 
 ```
@@ -86,20 +124,20 @@ ggpairs(df_listing, columns = top_corr, title = "",
   axisLabels = "show", columnLabels = colnames(df_listing[, top_corr]))
 ```
 
-```{r}
+```{r fig.height=12}
 corr <- round(cor(df_listing %>% select(one_of(c(top_corr,'availability_90') ))),3)
 ggcorrplot(corr, hc.order = TRUE, 
            type = "lower", 
            lab = FALSE, 
            lab_size = 3, 
            method="square", 
-           colors = c("tomato2", "white", "springgreen3"), 
+           colors = c("red", "white", "blue"), 
            title="Correlogram of Selected variables", 
            ggtheme=theme_bw)
 ```
 ```{r}
 df_listing_top_features <- df_listing %>% select(one_of(c(top_corr,'availability_90')))
 ggplot(data = melt(df_listing_top_features), mapping = aes(x = value)) + 
-    geom_histogram(bins = 30) + facet_wrap(~variable, scales = 'free')
+    geom_histogram(bins = 60, fill=airBColor) + facet_wrap(~variable, scales = 'free')
 ```
 

@@ -7,8 +7,13 @@ output:
 
 
 ```{r}
+
 library(tidyverse)
 library(gridExtra)
+library(broom)
+library(GGally)
+library(ggcorrplot)
+library(reshape2)
 ```
 
 ```{r}
@@ -20,6 +25,12 @@ dim(df_listing_raw)
 
 df_listing<-df_listing_raw %>% filter(reviews_per_month>0.5 & availability_90>0) %>% select(-text_experiences_offered)
 dim(df_listing)
+```
+```{r}
+print (table(sapply(df_listing, class)))
+colos_text<-df_listing %>% select(which(sapply(.,is.factor))) %>% colnames(.)
+print (colos_text)
+
 ```
 
 ```{r}
@@ -50,8 +61,45 @@ formula
 ```
 
 ```{r}
-lm<- lm(formula,df_listing)
+options(max.print=5.5E5)
+lm<- lm(availability_90~.,df_listing%>% select(-one_of(c(colos_text,c('availability_30','availability_60','availability_365','id')))))
 summary(lm)
-#str(df_listing %>% select(contains('amenities')))
+top_corr<- tidy(lm) %>% filter(p.value<.05)  %>% top_n(n = -25,wt = p.value) %>%pull(term)
+
+
+```
+
+```{r}
+colos<-paste0(top_corr, collapse="+")
+formula <- paste("availability_90 ~ ",colos,sep = "")
+formula
+
+model<-lm(formula,df_listing)
+summary(model)$adj.r.squared
+
+```
+## Correlations
+
+```{r}
+top_corr <- c(top_corr,'availability_90')
+ggpairs(df_listing, columns = top_corr, title = "",  
+  axisLabels = "show", columnLabels = colnames(df_listing[, top_corr]))
+```
+
+```{r}
+corr <- round(cor(df_listing %>% select(one_of(c(top_corr,'availability_90') ))),3)
+ggcorrplot(corr, hc.order = TRUE, 
+           type = "lower", 
+           lab = FALSE, 
+           lab_size = 3, 
+           method="square", 
+           colors = c("tomato2", "white", "springgreen3"), 
+           title="Correlogram of Selected variables", 
+           ggtheme=theme_bw)
+```
+```{r}
+df_listing_top_features <- df_listing %>% select(one_of(c(top_corr,'availability_90')))
+ggplot(data = melt(df_listing_top_features), mapping = aes(x = value)) + 
+    geom_histogram(bins = 30) + facet_wrap(~variable, scales = 'free')
 ```
 

@@ -14,6 +14,7 @@ library(ggcorrplot)
 library(reshape2)
 
 airBColor<- '#ff5a5f'
+airBColor2<- '#008489'
 ```
 
 ```{r}
@@ -47,8 +48,9 @@ ggplot(df_listing_raw %>% filter(!is.na(last_review)),aes(x=availability_90,y=re
 ```
 
 ```{r}
-df_listing<-df_listing_raw %>% filter(reviews_per_month>0.5 & availability_90>0 & availability_90<80) %>% select(-text_experiences_offered)
+df_listing<-df_listing_raw %>% filter(reviews_per_month>0.5 & availability_90>0 & availability_90<88) %>% select(-text_experiences_offered)
 dim(df_listing)
+write.csv(df_listing,'data/df_listing_high_renter.csv')
 ```
 ```{r}
 print (table(sapply(df_listing, class)))

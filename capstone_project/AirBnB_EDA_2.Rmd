@@ -1,0 +1,113 @@
+---
+title: "AirBnB Exploratory Data Analysis, part 2"
+output: github_document
+---
+
+
+```{r}
+
+library(tidyverse)
+library(gridExtra)
+library(broom)
+library(GGally)
+library(ggcorrplot)
+library(reshape2)
+library(xgboost)
+
+library(geosphere)
+
+airBColor<- '#ff5a5f'
+airBColor2<- '#008489'
+```
+
+```{r}
+df<-read.csv('data/df_listing_high_renter_with_pic_data.csv',stringsAsFactors = FALSE)
+```
+
+```{r}
+df$brandenburg_tor_lat <-52.516849
+df$brandenburg_tor_lon <-13.377661
+df$distance <- distVincentyEllipsoid(df[,c('longitude','latitude')], df[,c('brandenburg_tor_lon','brandenburg_tor_lat')])
+hist(df$distance/1000)
+```
+
+
+```{r}
+print (table(sapply(df, class)))
+
+df_no_text <-df %>% select(-which(sapply(.,is.character))) 
+
+
+```
+
+
+```{r}
+
+lm<-lm(availability_90~., df_no_text  %>% select(-one_of(c('availability_30','availability_60'))))
+summary(lm)$adj.r.squared
+top_corr<- tidy(lm) %>% filter(p.value<.05)  %>% top_n(n = -200,wt = p.value) %>% arrange(p.value) %>% pull(term)
+length(top_corr)
+```
+
+```{r}
+df_listing_top_features <- df %>% select(one_of(c(top_corr,'availability_90')))
+ggplot(data = melt(df_listing_top_features), mapping = aes(x = value)) + 
+    geom_histogram(bins = 60, fill=airBColor) + facet_wrap(~variable, scales = 'free')
+```
+
+```{r}
+ggplot(df,aes(x=availability_90,y=R_contrast))+ geom_jitter(alpha=.2)+geom_smooth(method ='lm')
+```
+
+```{r}
+corr <- round(cor(df %>% select(one_of(c(top_corr,'availability_90') %>% na.omit() ))),3)
+
+
+ggcorrplot(corr, hc.order = FALSE, 
+           type = "lower", 
+           lab = FALSE, 
+           lab_size = 3, 
+           method="square", 
+           colors = c("red", "white", "blue"), 
+           title="Correlogram of Selected variables", 
+           ggtheme=theme_bw)
+```
+```{r}
+ggplot(df %>% filter(distance<10000),aes(availability_90,distance))+ geom_point(alpha=.2,color=airBColor2)+geom_smooth()
+cor(na.omit(df)$distance,na.omit(df)$price)
+```
+
+```{r}
+library(caret)
+set.seed(1234)
+
+df_no_text<- df_no_text %>% na.omit()
+
+X<- data.matrix(df_no_text %>% select(-one_of(c('availability_30','availability_90','availability_365','availability_60','availability_90'))))
+y<- data.matrix(df_no_text$availability_60)
+
+a <- createDataPartition(iris$Species, p = 0.8, list=FALSE)
+X_train <- X[a,]
+X_test <- X[-a,]
+
+y_train = y[a,]
+y_test = y[-a,]
+
+
+bst <- xgboost(data =  X_train, label = y_train, max_depth = 12, 
+               eta = 0.1, nthread = 2, nrounds = 2,objective = "reg:linear")
+
+df.importances<-xgb.importance(colnames(X_train), model = bst)
+
+prediction <- predict(bst,X_test)
+
+
+postResample(pred = prediction, obs = y_test)
+```
+
+```{r}
+
+ggplot(df.importances ,aes(reorder(Feature, -Gain),Gain))+geom_bar(stat = 'identity',fill=airBColor2)+theme(axis.text.x=element_text(angle=90,hjust=1)) 
+```
+
+

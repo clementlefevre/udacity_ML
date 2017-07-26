@@ -1,0 +1,73 @@
+---
+title: "Capstone project Data Exploration"
+output:
+  html_document: 
+    highlight: haddock
+  html_notebook: default
+---
+
+This is an [R Markdown](http://rmarkdown.rstudio.com) Notebook. When you execute code within the notebook, the results appear beneath the code. 
+
+Try executing this chunk by clicking the *Run* button within the chunk or by placing your cursor inside it and pressing *Ctrl+Shift+Enter*. 
+```{r}
+library(tidyverse)
+library(gridExtra)
+library(broom)
+library(GGally)
+library(ggcorrplot)
+library(reshape2)
+library(xgboost)
+library(caret)
+
+
+library(ggplot2)
+library(extrafont)
+
+loadfonts()
+
+library(extrafont)
+font_install('fontcm')
+airBColor<- '#ff5a5f'
+airBColor2<- '#008489'
+```
+```{r}
+
+df.listing<- read.csv('data/listings.csv',stringsAsFactors = FALSE)
+```
+
+## Get the ratio of missing data per columns
+```{r}
+df.missing <- df.listing%>% summarise_all(funs(mean(is.na(.))*100)) %>% gather() %>% arrange(desc(value))
+colnames(df.missing)<- c('Feature', 'Percentage.missing')
+
+
+ggplot(df.missing,aes(x=Percentage.missing))+ geom_histogram(bins=100,fill=airBColor)+theme(text         = element_text(size=16, family="CM Sans"),
+          axis.title.x = element_text(face="italic"),
+          axis.title.y = element_text(face="bold"))
+```
+```{r}
+pdf("ggplot_cm.pdf", width=4, height=4)
+p <- qplot(c(1,5), c(1,5)) +
+  xlab("Made with CM fonts") + ylab("Made with CM fonts") +
+  ggtitle("Made with CM fonts")
+
+# Equation
+eq <- "italic(sum(frac(1, n*'!'), n==0, infinity) ==
+       lim(bgroup('(', 1 + frac(1, n), ')')^n, n %->% infinity))"
+
+# Without the new fonts
+p + annotate("text", x=3, y=3, parse=TRUE, label=eq)
+
+# With the new fonts
+p + annotate("text", x=3, y=3, parse=TRUE, family="CM Roman", label=eq) +
+    theme(text         = element_text(size=16, family="CM Roman"),
+          axis.title.x = element_text(face="italic"),
+          axis.title.y = element_text(face="bold"))
+
+dev.off()
+
+# Embed the fonts
+embed_fonts("ggplot_cm.pdf", outfile="ggplot_cm_embed.pdf")
+```
+
+

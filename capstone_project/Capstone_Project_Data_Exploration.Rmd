@@ -42,10 +42,7 @@ pdf("ggplot_cm.pdf", width=4,height=4)
 df.missing <- df.listing%>% summarise_all(funs(mean(is.na(.))*100)) %>% gather() %>% arrange(desc(value))
 colnames(df.missing)<- c('Feature', 'Percentage.missing')
 
-
 ggplot(df.missing,aes(x=Percentage.missing))+ geom_histogram(bins=100,fill=airBColor)+theme(text = element_text(size=12, family="CM Roman"))+labs(x = "% missing values", y="number of features")
-
-
 
 dev.off()
 

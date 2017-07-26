@@ -18,6 +18,7 @@ library(ggcorrplot)
 library(reshape2)
 library(xgboost)
 library(caret)
+library("animation")
 
 
 library(ggplot2)
@@ -25,8 +26,8 @@ library(extrafont)
 
 loadfonts()
 
-library(extrafont)
-font_install('fontcm')
+
+#font_install('fontcm')
 airBColor<- '#ff5a5f'
 airBColor2<- '#008489'
 ```
@@ -37,14 +38,22 @@ df.listing<- read.csv('data/listings.csv',stringsAsFactors = FALSE)
 
 ## Get the ratio of missing data per columns
 ```{r}
+pdf("ggplot_cm.pdf", width=4,height=4)
 df.missing <- df.listing%>% summarise_all(funs(mean(is.na(.))*100)) %>% gather() %>% arrange(desc(value))
 colnames(df.missing)<- c('Feature', 'Percentage.missing')
 
 
-ggplot(df.missing,aes(x=Percentage.missing))+ geom_histogram(bins=100,fill=airBColor)+theme(text         = element_text(size=16, family="CM Sans"),
-          axis.title.x = element_text(face="italic"),
-          axis.title.y = element_text(face="bold"))
+ggplot(df.missing,aes(x=Percentage.missing))+ geom_histogram(bins=100,fill=airBColor)+theme(text = element_text(size=12, family="CM Roman"))+labs(x = "% missing values", y="number of features")
+
+
+
+dev.off()
+
+# Embed the fonts
+embed_fonts("ggplot_cm.pdf", outfile="ggplot_cm_embed.pdf")
+im.convert("ggplot_cm_embed.pdf", output = "bm.png", extra.opts="-density 600")
 ```
+
 ```{r}
 pdf("ggplot_cm.pdf", width=4, height=4)
 p <- qplot(c(1,5), c(1,5)) +

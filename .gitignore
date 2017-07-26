@@ -69,3 +69,4 @@ target/
 
 #Image folder
 image-classification/cifar-10-batches-py/
+.Rproj.user

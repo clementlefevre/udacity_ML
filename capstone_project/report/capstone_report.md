@@ -31,10 +31,7 @@ Looking at other european cities :
 and :
 
 
-
-
-
-The full renting of an appartment is strictly regulated in Berlin : [only 58 authorizations have been delivered by the city for 800 applications in 2016](http://www.salon.com/2017/06/30/how-the-berlin-government-could-rein-in-airbnb-and-protect-local-housing_partner/).
+The full renting of an appartment is strictly regulated in Berlin :it requires an authorization from the city Authorities, In 2016, [only 58 authorizations have been delivered by the city for 800 applications](http://www.salon.com/2017/06/30/how-the-berlin-government-could-rein-in-airbnb-and-protect-local-housing_partner/).
 
 One of the consequence of the spread of such a disruptive platform is a shortage of affordable housing for the locals. 
 InsideAirBnB, an online activist organization, regulary scraps the entire AirBnB offers for a selection of cities, including Berlin.
@@ -50,7 +47,7 @@ In this section, you will want to clearly define the problem that you are trying
 - _Have you thoroughly discussed how you will attempt to solve the problem?_
 - _Is an anticipated solution clearly defined? Will the reader understand what results you are looking for?_
 
-Using those data, we can determine which features characterize the best occupancy rate. With those selected features, we will then build different classification models and select the best to predict this ratio.
+Using those data, we can determine which features characterize the best professional hosts. With those selected features, we will then build different classification models and select the best to identify the professionals.
 
 Our aim is to predict whether an appartment will have an occupacy ratio higher or equals to the average ratio of Berlin's hotel (77% in 2015/2016) for the next 30 days.
 

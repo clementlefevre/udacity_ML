@@ -91,7 +91,7 @@ dev.off()
 
 # Embed the fonts
 embed_fonts("capital_report_master_card.pdf", outfile="capital_report_master_card_embed.pdf")
-im.convert("capital_report_master_card_embed.pdf", output = "capital_report_master_card_embed.png", extra.opts="-density 600")
+im.convert("capital_report_master_card_embed.pdf", output = "report/img/capital_report_master_card_embed.png", extra.opts="-density 600")
 
 ```
 # Benchmark AirBnB Cities
@@ -108,15 +108,15 @@ df.profi.appart<-df.profi %>% filter(room_type=="Entire home/apt")
 
 
 ```{r}
-pdf("city_benchmark_availability_30.pdf", width=8,height=8)
+pdf("./report/img/city_benchmark_availability_30.pdf", width=8,height=8)
 
 ggplot(df.profi.appart,aes(x=availability_30,y=city))+ geom_joy(fill = airBColor)+theme(text = element_text(size=12, family="CM Roman"))+labs(x='Nights available next 30 days')
 
 dev.off()
 
 # Embed the fonts
-embed_fonts("city_benchmark_availability_30.pdf", outfile="city_benchmark_availability_30_embed.pdf")
-im.convert("city_benchmark_availability_30_embed.pdf", output = "city_benchmark_availability_30_embed.png", extra.opts="-density 600")
+embed_fonts("./report/img/city_benchmark_availability_30.pdf", outfile="./report/img/city_benchmark_availability_30_embed.pdf")
+im.convert("./report/img/city_benchmark_availability_30_embed.pdf", output = "./report/img/city_benchmark_availability_30_embed.png", extra.opts="-density 600")
 ```
 
 ```{r}
@@ -128,7 +128,7 @@ dev.off()
 
 # Embed the fonts
 embed_fonts("city_benchmark_price.pdf", outfile="city_benchmark_price_embed.pdf")
-im.convert("city_benchmark_price_embed.pdf", output = "city_benchmark_price_embed.png", extra.opts="-density 600")
+im.convert("city_benchmark_price_embed.pdf", output = "report/img/city_benchmark_price_embed.png", extra.opts="-density 600")
 ```
 ## Group by room_type
 
@@ -142,6 +142,6 @@ dev.off()
 
 # Embed the fonts
 embed_fonts("city_benchmark_room_type.pdf", outfile="city_benchmark_room_type_embed.pdf")
-im.convert("city_benchmark_room_type_embed.pdf", output = "city_benchmark_room_type_embed.png", extra.opts="-density 600")
+im.convert("city_benchmark_room_type_embed.pdf", output = "report/img/city_benchmark_room_type_embed.png", extra.opts="-density 600")
 ```
 

@@ -75,7 +75,7 @@ extract_table_from_master_pdf <- function(){
 ```{r}
 #extract_table_from_master_pdf()
 
-df_destination_overall<- read.csv('data/global_destination_index_overall.csv',stringsAsFactors = FALSE)
+df_destination_overall<- read.csv('../../data/global_destination_index_overall.csv',stringsAsFactors = FALSE)
 ```
 
 ```{r}
@@ -91,12 +91,12 @@ dev.off()
 
 # Embed the fonts
 embed_fonts("capital_report_master_card.pdf", outfile="capital_report_master_card_embed.pdf")
-im.convert("capital_report_master_card_embed.pdf", output = "report/img/capital_report_master_card_embed.png", extra.opts="-density 600")
+im.convert("capital_report_master_card_embed.pdf", output = "../../report/img/capital_report_master_card_embed.png", extra.opts="-density 600")
 
 ```
 # Benchmark AirBnB Cities
 ```{r}
-df<-read.csv('data/benchmark_capitals/all_listings.csv',stringsAsFactors = FALSE)
+df<-read.csv('../../data/benchmark_capitals/all_listings.csv',stringsAsFactors = FALSE)
 df<- df %>% mutate_at(c('host_since','first_review','last_review'), funs(new_=ymd(.)))
 head(df)
 dim(df)
@@ -108,15 +108,15 @@ df.profi.appart<-df.profi %>% filter(room_type=="Entire home/apt")
 
 
 ```{r}
-pdf("./report/img/city_benchmark_availability_30.pdf", width=8,height=8)
+pdf("../../report/img/city_benchmark_availability_30.pdf", width=8,height=8)
 
 ggplot(df.profi.appart,aes(x=availability_30,y=city))+ geom_joy(fill = airBColor)+theme(text = element_text(size=12, family="CM Roman"))+labs(x='Nights available next 30 days')
 
 dev.off()
 
 # Embed the fonts
-embed_fonts("./report/img/city_benchmark_availability_30.pdf", outfile="./report/img/city_benchmark_availability_30_embed.pdf")
-im.convert("./report/img/city_benchmark_availability_30_embed.pdf", output = "./report/img/city_benchmark_availability_30_embed.png", extra.opts="-density 600")
+embed_fonts("../../report/img/city_benchmark_availability_30.pdf", outfile="../../report/img/city_benchmark_availability_30_embed.pdf")
+im.convert("../../report/img/city_benchmark_availability_30_embed.pdf", output = "../../report/img/city_benchmark_availability_30_embed.png", extra.opts="-density 600")
 ```
 
 ```{r}
@@ -128,7 +128,7 @@ dev.off()
 
 # Embed the fonts
 embed_fonts("city_benchmark_price.pdf", outfile="city_benchmark_price_embed.pdf")
-im.convert("city_benchmark_price_embed.pdf", output = "report/img/city_benchmark_price_embed.png", extra.opts="-density 600")
+im.convert("city_benchmark_price_embed.pdf", output = "../../report/img/city_benchmark_price_embed.png", extra.opts="-density 600")
 ```
 ## Group by room_type
 
@@ -142,6 +142,39 @@ dev.off()
 
 # Embed the fonts
 embed_fonts("city_benchmark_room_type.pdf", outfile="city_benchmark_room_type_embed.pdf")
-im.convert("city_benchmark_room_type_embed.pdf", output = "report/img/city_benchmark_room_type_embed.png", extra.opts="-density 600")
+im.convert("city_benchmark_room_type_embed.pdf", output = "../../report/img/city_benchmark_room_type_embed.png", extra.opts="-density 600")
 ```
 
+
+# Group by host listing counts
+```{r}
+df.listing<- read.csv('../../data/listing_for_EDA.csv',stringsAsFactors = FALSE)
+```
+
+```{r}
+pdf("host_listing_counts_reviews.pdf", width=8,height=8)
+df.listing<- df.listing %>% filter((host_listings_count<10)&(host_listings_count>0)&(availability_30>0)&(availability_30<27))
+ggplot(df.listing ,aes(x=as.factor(host_listings_count),y=reviews_per_month,group=host_listings_count))+ geom_boxplot(fill=airBColor)+theme(text = element_text(size=12, family="CM Roman"),legend.title=element_blank())+labs(x='listings per host',y='number of reviews per month')
+
+dev.off()
+
+# Embed the fonts
+embed_fonts("host_listing_counts_reviews.pdf", outfile="host_listing_counts_reviews_embed.pdf")
+im.convert("host_listing_counts_reviews_embed.pdf", output = "../../report/img/host_listing_counts_reviews_embed.png", extra.opts="-density 600")
+```
+
+```{r}
+pdf("listing_counts.pdf", width=8,height=8)
+df.listing<- df.listing %>% filter((host_listings_count<20)&(host_listings_count>0)&(availability_30>0)&(availability_30<27))
+
+g <- ggplot(df.listing, aes(as.factor(host_listings_count)))
+
+g+ geom_bar(fill=airBColor)+theme(text = element_text(size=12, family="CM Roman"),legend.title=element_blank())+labs(x='listings own by host',y='total listings')
+
+
+dev.off()
+
+# Embed the fonts
+embed_fonts("listing_counts.pdf", outfile="listing_counts_embed.pdf")
+im.convert("listing_counts_embed.pdf", output = "../../report/img/listing_counts_embed.png", extra.opts="-density 600")
+```

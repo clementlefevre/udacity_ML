@@ -65,9 +65,9 @@ In this section, you will need to clearly define the metrics or calculations you
 - _Have you provided reasonable justification for the metrics chosen based on the problem and solution?_
 
 
-In our context, the aim is to minimize the cost of investigating potential 
+In our context, the aim is to minimize the cost of investigating potential law breakers.
 To evaluate the quality of our classification model, we will use the standard metrics : recall and F1 Score.
-In our context, it means for the recall, what is the percentage  of appartments we correctly predicted to an occupancy ratio equals or higher than 77% versus the number of appartments who are truly booked over 77%.
+In our context, it means for the recall, what is the percentage  of appartments we correctly predicted as professional.
 
 
 
@@ -83,9 +83,7 @@ In this section, you will be expected to analyze the data you are using for the 
 
 
 The AirBnB dataset for Berlin consists in a list of appartments with around 100 features :
-
-
-
+- list percentage of missing features
 
 ![Distribution of missing features](bm.png){ width=200px }  ![Distribution of missing features](bm.png){ width=200px } 
 
@@ -94,6 +92,10 @@ In this section, you will need to provide some form of visualization that summar
 - _Have you visualized a relevant characteristic or feature about the dataset or input data?_
 - _Is the visualization thoroughly analyzed and discussed?_
 - _If a plot is provided, are the axes, title, and datum clearly defined?_
+
+- plot availability_30 vs listings count per host
+
+
 
 ### Algorithms and Techniques
 In this section, you will need to discuss the algorithms and techniques you intend to use for solving the problem. You should justify the use of each one based on the characteristics of the problem and the problem domain. Questions to ask yourself when writing this section:

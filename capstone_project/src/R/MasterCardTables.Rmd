@@ -1,0 +1,72 @@
+---
+title: "Capstone Project - Global Destination Cities Index Mastercard"
+output: html_notebook
+---
+
+This is an [R Markdown](http://rmarkdown.rstudio.com) Notebook. When you execute code within the notebook, the results appear beneath the code. 
+
+Try executing this chunk by clicking the *Run* button within the chunk or by placing your cursor inside it and pressing *Ctrl+Shift+Enter*. 
+
+```{r}
+library(tidyverse)
+library(stringr)
+library(tabulizer)
+library(ggthemes)
+library(extrafont)
+library(animation)
+library(lubridate)
+library(ggjoy)
+
+loadfonts()
+
+
+airBColor<- '#ff5a5f'
+airBColor2<- '#008489'
+```
+
+Add a new chunk by clicking the *Insert Chunk* button on the toolbar or by pressing *Ctrl+Alt+I*.
+
+When you save the notebook, an HTML file containing the code and output will be saved alongside it (click the *Preview* button or press *Ctrl+Shift+K* to preview the HTML file).
+
+
+```{r}
+
+header.true <- function(df) {
+  names(df) <- as.character(unlist(df[1,]))
+  colnames(df) <- make.names(colnames(df))
+  df[-1,]
+  }
+
+extract_table_from_master_pdf <- function(){
+    tab1 <- extract_tables("data/FINAL-Global-Destination-Cities-Index-Report.pdf", pages = 62)
+    tab2 <- extract_tables("data/FINAL-Global-Destination-Cities-Index-Report.pdf", pages = 63)
+    df_tab1<- tab1[[1]]
+    df_tab2<- tab2[[1]]
+    
+    df_tab1a<-df_tab1[,c(1:5)]
+    df_tab1b<-df_tab1[,c(7:11)][-1, ] 
+    
+    df_tab2a<-df_tab2[,c(1:5)]
+    df_tab2b<-df_tab2[,c(7:11)][-1, ] 
+    
+    df_tab1<- rbind(df_tab1a,df_tab1b)
+    df_tab2<- rbind(df_tab2a,df_tab2b)
+    
+    
+    df_tab1<-header.true(as.data.frame(df_tab1))
+    df_tab2<-header.true(as.data.frame(df_tab2))
+    
+    df_tab<-rbind(df_tab1,df_tab2) 
+    
+    write.csv(df_tab,'data/tmp/df_tab.csv') #otherwise the format is all factors.
+    
+  df_destination_overall<-read.csv('data/tmp/df_tab.csv',stringsAsFactors = FALSE) # recongize automatically numeric
+  df_destination_overall<-df_destination_overall%>% select(-one_of(c('X.1','X')))
+  df_destination_overall$Int.l.Overnight.Visitor.Spend<-gsub( "\\$", "",df_destination_overall$Int.l.Overnight.Visitor.Spend,)
+  df_destination_overall$Int.l.Overnight.Visitor.Spend<-as.numeric(df_destination_overall$Int.l.Overnight.Visitor.Spend )
+  str(df_destination_overall)
+  write.csv(df_destination_overall,'data/global_destination_index_overall.csv')
+}
+
+
+```

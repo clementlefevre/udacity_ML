@@ -22,11 +22,11 @@ The first member registered in 2008, and there are 20576 offers as of may 2017.
 
 In this study, we will focus on the full appartments to be rented on AirBnB.
 
-![Visitors vs expenditures](capital_report_master_card_embed.png){ width=300px } ![](city_benchmark_room_type_embed.png){width=300px} 
+![Visitors vs expenditures](./img/capital_report_master_card.png){ width=300px } ![](./img/city_benchmark_room_type.png){width=300px} 
 
 Looking at other european cities :
 
-![](city_benchmark_availability_30_embed.png){width=300px}\ ![](city_benchmark_price_embed.png){width=300px} 
+![](./img/city_benchmark_availability_30.png){width=300px}\ ![](./img/city_benchmark_price.png){width=300px} 
 
 and :
 
@@ -67,8 +67,7 @@ In this section, you will need to clearly define the metrics or calculations you
 
 In our context, the aim is to minimize the cost of investigating potential law breakers.
 To evaluate the quality of our classification model, we will use the standard metrics : recall and F1 Score.
-In our context, it means for the recall, what is the percentage  of appartments we correctly predicted as professional.
-
+In our context, the recall is the percentage  of appartments we correctly predicted as professional.
 
 
 ## II. Analysis
@@ -82,16 +81,22 @@ In this section, you will be expected to analyze the data you are using for the 
 - _Are there any abnormalities or characteristics about the input space or dataset that need to be addressed? (categorical variables, missing values, outliers, etc.)_
 
 
-The AirBnB dataset for Berlin consists in a list of appartments with around 100 features :
-- list percentage of missing features
 
-![Distribution of missing features](bm.png){ width=200px }  ![Distribution of missing features](bm.png){ width=200px } 
 
 ### Exploratory Visualization
 In this section, you will need to provide some form of visualization that summarizes or extracts a relevant characteristic or feature about the data. The visualization should adequately support the data being used. Discuss why this visualization was chosen and how it is relevant. Questions to ask yourself when writing this section:
 - _Have you visualized a relevant characteristic or feature about the dataset or input data?_
 - _Is the visualization thoroughly analyzed and discussed?_
 - _If a plot is provided, are the axes, title, and datum clearly defined?_
+
+
+The AirBnB dataset for Berlin consists in a list of appartments with around 100 features :
+
+
+![Distribution of missing features](./img/missing_values.png){ width=300px }  ![Listing per hosts](./img/listing_counts.png){ width=300px }
+
+![Listing per hosts](./img/host_listing_counts_reviews.png){ width=300px }  ![Listing per hosts](./img/host_listing_availability_30.png){ width=300px } 
+
 
 - plot availability_30 vs listings count per host
 

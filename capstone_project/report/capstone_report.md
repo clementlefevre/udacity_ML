@@ -38,10 +38,15 @@ One of the consequence of the spread of such a disruptive platform is a shortage
 InsideAirBnB, an online activist organization, regulary scraps the entire AirBnB offers for a selection of cities, including Berlin.
 Using those data, we can identify professional hosts that potentially break the local regulation.
 
-Evolution of active listings in Berlin | Mapping
+Evolution of active listings in Berlin | Evolution of prices
 :-------------------------:|:-------------------------:
-![](./img/listing_history.png){width=300px} |  ![](./img/geo_map_multihosting.png){width=300px} 
+![](./img/listing_history_counts.png){width=300px} |  ![](./img/listing_history_prices.png){width=300px} 
 
+Then, looking at the localisation as of may 2017 :
+
+|  Localization of active offers in Berlin |
+|:--:|
+|  ![](./img/geo_map_multihosting.png) |
 
 
 ### Problem Statement

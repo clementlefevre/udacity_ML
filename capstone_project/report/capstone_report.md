@@ -121,11 +121,19 @@ The above charts show that professional hosts have an higher number of reviews, 
 Now we can chekc which features from the listing table are the most relevant to predict the multihosting. For this i use the ${\chi}^2$ test on the numerical values :
 
 
+| XGB best fclass features  |
+|:--:|
+|![](./img/XGB_features_selection.png){ width=500px }|
+
+
+
 |  ${\chi}^2$ best features  |
 |:--:|
 |![](./img/top_features_chi2.png){ width=500px }|
 
-
+|  XGBoost best features  |
+|:--:|
+|![](./img/top_features_xgb.png){ width=500px }|
 
 
 

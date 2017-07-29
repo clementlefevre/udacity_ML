@@ -16,13 +16,15 @@ library(extrafont)
 library(animation)
 library(lubridate)
 library(ggjoy)
-library(xtable)
+library(pander)
 loadfonts()
 
 
 airBColor<- '#ff5a5f'
 airBColor2<- '#008489'
 ```
+
+
 ```{r}
 get_path_var<- function(filename){
  path<-''
@@ -40,6 +42,9 @@ save_to_png <- function(path){
   file.remove(path$pdf)
   file.remove(path$embed)
 }
+
+bold <- function(x) {paste('{\\textbf{',x,'}}', sep ='')}
+
 ```
 
 
@@ -159,7 +164,7 @@ colnames(df.missing.values)<-c('Features','percent.missing')
 ```
 
 ```{r}
-path <- get_path_var('missing_values')
+path <- get_path_var('missing_values_listings')
 pdf(path$pdf, width=8,height=8)
 
 ggplot(df.missing.values,aes(x=percent.missing*100)) + geom_histogram()+theme(text = element_text(size=14, family="CM Roman"),legend.title=element_blank())+labs(x='% values missing',y='number of features')
@@ -173,10 +178,11 @@ save_to_png(path)
 date_scraped <-as.Date('2017-05-01')
 
 listing.raw.summary<- df.listing.raw %>% group_by(room_type) %>% summarise(total_listing = n(), '% reviewed' =round( mean(!is.na(last_review))*100,2),'% active'=round(mean(((date_scraped-last_review)<60)&(availability_30>0),na.rm=TRUE)*100,2))
-
-print(xtable(listing.raw.summary), include.rownames=FALSE, type = "latex")
+names(listing.raw.summary) <- pandoc.strong.return(names(listing.raw.summary))
+pander(listing.raw.summary, style = 'rmarkdown',emphasize.strong.cols = 1)
 
 ```
+
 
 ```{r}
 
@@ -190,3 +196,21 @@ dev.off()
 save_to_png(path)
 ```
 
+# Reviews language
+
+```{r}
+df_language_reviews <- read.csv('../../data/reviews_with_lang.csv',stringsAsFactors = FALSE)
+group.languages.reviews <- df_language_reviews %>% group_by(language) %>% summarise(reviews = n())
+```
+
+
+```{r}
+
+path <- get_path_var('group_language_reviews')
+pdf(path$pdf, width=8,height=8)
+
+ggplot(group.languages.reviews,aes(x=reorder(language,-reviews),y=reviews))+ geom_bar(stat = 'identity',fill=airBColor)+theme(text = element_text(size=14, family="CM Roman"),legend.title=element_blank(),axis.title=element_blank(),axis.text.x = element_text(angle = 90, hjust = 1,vjust = 0))+labs(x='')
+
+dev.off()
+save_to_png(path)
+```

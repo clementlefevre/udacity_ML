@@ -1,0 +1,94 @@
+---
+title: "R BnB detailed"
+output: github_document
+
+---
+
+
+```{r}
+library(OpenStreetMap)
+library(leaflet)
+library(rgdal)
+library(dplyr)
+library(purrr)
+library(htmlwidgets)
+library(RColorBrewer)
+library(classInt)
+library(plotrix)  
+library(ggmap)
+library(magick)
+library(ggthemes)
+library(scales)
+library(Hmisc)
+
+library(lubridate)
+
+library(extrafont)
+library(animation)
+
+
+
+airBColor<- '#ff5a5f'
+airBColor2<- '#008489'
+```
+
+
+```{r}
+get_path_var<- function(filename){
+ path<-''
+  path$pdf <- paste('../../report/img/',filename,'.pdf',sep='')
+  path$embed<- paste('../../report/img/',filename,'_embed.pdf',sep='')
+  path$png<- paste(filename,'.png',sep='')
+  return (path)
+}
+
+save_to_png <- function(path){
+    #Embed the fonts
+  embed_fonts(path$pdf, outfile=path$embed)
+  im.convert(path$embed, output = path$png, extra.opts="-density 600")
+  file.rename(path$png,paste('../../report/img/',path$png,sep=''))
+  file.remove(path$pdf)
+  file.remove(path$embed)
+}
+```
+
+```{r}
+
+df<-read.csv('../../data/insideAirBnB/listings_full.csv')
+df$prico <- as.numeric(gsub('[$,]', '', df_full$price))
+
+ df<- df %>% filter((room_type=='Entire home/apt')&(availability_365>0)&(reviews_per_month>1))
+  df<-df %>% mutate(is_multihost=ifelse(calculated_host_listings_count>1,1,0))
+```
+
+### Set map box :
+```{r}
+
+range_lat<-range(df$latitude)
+range_lon<-range(df$longitude)
+```
+
+### Load OSM Map:
+```{r}
+
+ggmap_berlin<- get_map(location = c(left = 13.3, bottom = 52.46, right =
+  13.5, top = 52.56),source="google",color="bw")
+```
+
+
+```{r fig.width=8, fig.height=8}
+palette<-c(airBColor,airBColor2)
+
+path <- get_path_var('geo_map_multihosting')
+pdf(path$pdf, width=8,height=8)
+
+   ggmap(ggmap_berlin)+ geom_point(aes(x=longitude, y=latitude,colour=as.factor(is_multihost)), data=df, shape=1,size=1,stroke=.5)+scale_colour_manual(values = palette,labels = c("Single host","Multi host"))+theme(text = element_text(size=12, family="CM Roman"),axis.title = element_text(),axis.title.x=element_blank(), axis.text.x = element_text(angle = 90, hjust = 1),legend.text=element_text(size=10),plot.caption=element_text(size=8))+labs(color = "")
+
+dev.off()
+save_to_png(path)
+
+
+
+
+```
+`

@@ -1,0 +1,93 @@
+---
+title: "R BnB"
+output: github_document
+
+---
+
+```{r}
+library(tidyverse)
+library(lubridate)
+library(scales)
+library(extrafont)
+library(animation)
+
+airBColor<- '#ff5a5f'
+airBColor2<- '#008489'
+```
+
+
+```{r}
+
+path <- "../../data/insideAirBnB/history/"
+filos<- list.files(path =path)
+
+print(filos)
+
+get_path_var<- function(filename){
+ path<-''
+  path$pdf <- paste('../../report/img/',filename,'.pdf',sep='')
+  path$embed<- paste('../../report/img/',filename,'_embed.pdf',sep='')
+  path$png<- paste(filename,'.png',sep='')
+  return (path)
+}
+
+save_to_png <- function(path){
+    #Embed the fonts
+  embed_fonts(path$pdf, outfile=path$embed)
+  im.convert(path$embed, output = path$png, extra.opts="-density 600")
+  file.rename(path$png,paste('../../report/img/',path$png,sep=''))
+  file.remove(path$pdf)
+  file.remove(path$embed)
+}
+
+bold <- function(x) {paste('{\\textbf{',x,'}}', sep ='')}
+
+
+```
+
+```{r}
+df_test<-read.csv('../../data/insideAirBnB/history/2016_10.csv',stringsAsFactors = FALSE)
+colnames(df_test)
+```
+
+# Get summary bet neighbourhood
+```{r}
+
+df_neighbourhood <- data.frame()
+
+for (filo in filos){
+  file_path = paste0(path,filo)
+  
+  df<-read.csv(file_path, stringsAsFactors = FALSE)
+  df<- df %>% filter((room_type=='Entire home/apt')&(availability_365>0)&(reviews_per_month>0))
+  df<-df %>% mutate(is_multihost=ifelse(calculated_host_listings_count>1,1,0))
+  groupy<-df %>% group_by(is_multihost) %>% summarise(total_offers = n(), mean_price=mean(price))
+  year_month<-strsplit(filo,'.csv')[[1]]
+  
+  groupy$year<-as.integer(strsplit(year_month,'_')[[1]][1])
+  groupy$month<-as.integer(strsplit(year_month,'_')[[1]][2])
+  df_neighbourhood<-rbind(df_neighbourhood,groupy)
+}
+
+df_neighbourhood<- df_neighbourhood %>% ungroup()
+df_neighbourhood$date <- with(df_neighbourhood, ymd(sprintf('%04d%02d%02d', year, month, 1)))
+
+```
+
+
+#Plot general evolution
+
+```{r}
+palette<-c(airBColor,airBColor2)
+
+path <- get_path_var('listing_history')
+pdf(path$pdf, width=8,height=8)
+
+ggplot(df_neighbourhood,aes(x=date,y=total_offers,group=is_multihost,colour=as.factor(is_multihost)))+ geom_line(size=1)+scale_x_date(breaks = pretty_breaks(15))+scale_colour_manual(values = palette,labels = c("Single host","Multi host"))+theme(text = element_text(size=14, family="CM Roman"),axis.title = element_text(),axis.title.x=element_blank(), axis.text.x = element_text(angle = 90, hjust = 1),legend.text=element_text(size=10),plot.caption=element_text(size=8))+labs(y="online active offers",color = "")
+
+dev.off()
+save_to_png(path)
+
+
+
+```

@@ -18,6 +18,7 @@ The first member registered in 2008, and there are 20576 offers as of may 2017.
 
 In this study, we will focus on the full appartments to be rented on AirBnB in Berlin.
 
+For the context, here are some self-explanotory charts to understand the situationof Berlin amongst the others world-class cities  in term of tourism :
 Visitors vs spending|AirBnB renting structure
 :-------------------------:|:-------------------------:
 ![Visitors vs expenditures](./img/capital_report_master_card.png){ width=300px } | ![](./img/city_benchmark_room_type.png){width=300px} 
@@ -36,6 +37,11 @@ The full renting of an appartment is strictly regulated in Berlin :it requires a
 One of the consequence of the spread of such a disruptive platform is a shortage of affordable housing for the locals. 
 InsideAirBnB, an online activist organization, regulary scraps the entire AirBnB offers for a selection of cities, including Berlin.
 Using those data, we can identify professional hosts that potentially break the local regulation.
+
+Evolution of active listings in Berlin | Mapping
+:-------------------------:|:-------------------------:
+![](./img/listing_history.png){width=300px} |  ![](./img/geo_map_multihosting.png){width=300px} 
+
 
 
 ### Problem Statement
@@ -64,32 +70,30 @@ _(approx. 2-4 pages)_
 ### Data Exploration
 The dataset has been built via the  web scraping of the AirBnB website, thus we can considere this is a partial dump of the original  database. Formatted as a text file, there are around 100 features available per appartment : price, availability for the next days, picture of the appartment, number of reviews, coordinates, list of offered amenities, etc..
 
-|  Distribution of missing features |
+The dataset consists in three tables : the listings informations, the text of the reviews, the timestamp of the reviews and the booking calendar day per day for the next 365 days.
+We will use the first three items to build our model.
+
+
+Regarding the listing informations table,the main table with 95 features, here is a short summary :
+
+|  Distribution of missing features in the main table |
 |:--:|
-|  ![](./img/missing_values.png){ width=300px } |
+|  ![](./img/missing_values_listings.png){ width=300px } |
 
-
-\begin{table}[ht]
-\centering
-\begin{tabular}{lrrr}
-  \hline
-room\_type & total\_listing & \% reviewed & \% active \\ 
-  \hline
-Entire home/apt & 10285 & 80.83 & 30.85 \\ 
-  Private room & 10011 & 76.65 & 28.10 \\ 
-  Shared room & 280 & 69.29 & 30.42 \\ 
-   \hline
-\end{tabular}
-\end{table}
+As we can see, most of the information are present.
 
 
 In order to analyse the data, we first eliminate the listing that have no availability at all, meaning the host does not rent it.
-
-
 Unfortunately, we do not have the effective booking information (booking history, amount charged) for each appartment, but we can approximate them via the availability planning.
 
-Before making it modeling-ready, this raw dataset need to be processed.
+Then, we have to remove the 'zombie' host, online listing that are not active anymore. To proceed, we drop the listing for which the last review is older than two months and the availability for the next 30 days is zero :
 
+
+|    **room_type**    | **total_listing** | **% reviewed** | **% active** |
+|:-------------------:|:-----------------:|:--------------:|:------------:|
+| **Entire home/apt** |       10285       |     80.83      |    30.85     |
+|  **Private room**   |       10011       |     76.65      |     28.1     |
+|   **Shared room**   |        280        |     69.29      |    30.42     |
 
 ### Exploratory Visualization
 
@@ -109,29 +113,43 @@ Number of reviews per listings rented|Availability per listings rented
 
 The above charts show that professional hosts have an higher number of reviews, but a also an higher availability.
 
+Now we can chekc which features from the listing table are the most relevant to predict the multihosting. For this i use the ${\chi}^2$ test on the numerical values :
 
+
+|  ${\chi}^2$ best features  |
+|:--:|
+|![](./img/top_features_chi2.png){ width=500px }|
+
+
+
+
+
+|   Reviews per language |
+|:--:|
+|![](./img/group_language_reviews.png){ width=300px }|
 
 
 ### Algorithms and Techniques
-In this section, you will need to discuss the algorithms and techniques you intend to use for solving the problem. You should justify the use of each one based on the characteristics of the problem and the problem domain. Questions to ask yourself when writing this section:
-- _Are the algorithms you will use, including any default variables/parameters in the project clearly defined?_
-- _Are the techniques to be used thoroughly discussed and justified?_
-- _Is it made clear how the input data or datasets will be handled by the algorithms and techniques chosen?_
+We implement three different classification algorithm :
 
-We will implement three differents class of classification algorithm :
+- a standard logistic regression to be used as a benchmark,
+- a decision tree based algorithm : Xtra Gradient Boosting (XGBoost) Classifier : does not require much feature engineering nor hyper-parameters tuning. On top of that it is fast.
+- Neural Nets based algorithm with a binary classifier using the Keras wrapper with a Tensorflow backend.
 
-- logistic regression as a benchmark,
-- Suppport Vector Machine with RBF kernel,
-- Xtra Gradient Boosting (XGBoost).
-- 
+A Support vector machine approach has been excluded due to its heavy hyper parameter tuning.
+
 
 ### Benchmark
 In this section, you will need to provide a clearly defined benchmark result or threshold for comparing across performances obtained by your solution. The reasoning behind the benchmark (in the case where it is not an established result) should be discussed. Questions to ask yourself when writing this section:
 - _Has some result or value been provided that acts as a benchmark for measuring performance?_
 - _Is it clear how this result or value was obtained (whether by data or by hypothesis)?_
 
+As we are in the case of a binary classifier, a basic benchmark classifier consist in labeling all the entries as non-professional hosts (66% of the population).
+We will thus use the Logistic classifier as benchmark and try to get a recall value for the professional higher than 90%.
 
-## III. Methodology
+
+
+#%# III. Methodology
 _(approx. 3-5 pages)_
 
 ### Data Preprocessing
@@ -139,6 +157,19 @@ In this section, all of your preprocessing steps will need to be clearly documen
 - _If the algorithms chosen require preprocessing steps like feature selection or feature transformations, have they been properly documented?_
 - _Based on the **Data Exploration** section, if there were abnormalities or characteristics that needed to be addressed, have they been properly corrected?_
 - _If no preprocessing is needed, has it been made clear why?_
+
+
+The text reviews and apparments pictures need processing :
+
+For the reviews, first select the reviews written in english, vectorize them using the TFIDF method and finally reduce the dimensionality via the Principal Components Analsysis.
+
+For the pictures, after having scrapped the pictures and converted them into numpy arrays, we work in three steps :
+
+- compute the brightness and contrast,
+- compute the 5 top colors,
+- compute a PCA for the greyscale pictures.
+
+
 
 ### Implementation
 In this section, the process for which metrics, algorithms, and techniques that you implemented for the given data will need to be clearly documented. It should be abundantly clear how the implementation was carried out, and discussion should be made regarding any complications that occurred during this process. Questions to ask yourself when writing this section:

@@ -12,23 +12,23 @@ July 31st, 2017
 _(approx. 1-2 pages)_
 
 ### Project Overview
-In this section, look to provide a high-level overview of the project in layman’s terms. Questions to ask yourself when writing this section:
-- _Has an overview of the project been provided, such as the problem domain, project origin, and related datasets or input data?_
-- _Has enough background information been given so that an uninformed reader would understand the problem domain and following problem statement?_
-
 AirBnB is an online platform for accomodation. Since its launch in 2008, it provides now 3,000,000 lodging listings in 65,000 cities and 191 countries (source : wikipedia)
 In Berlin, amongst the 17810 registered hosts, 13% are considered as active users (the last review was done in the last 10 days).
 The first member registered in 2008, and there are 20576 offers as of may 2017.
 
-In this study, we will focus on the full appartments to be rented on AirBnB.
+In this study, we will focus on the full appartments to be rented on AirBnB in Berlin.
 
-![Visitors vs expenditures](./img/capital_report_master_card.png){ width=300px } ![](./img/city_benchmark_room_type.png){width=300px} 
+Visitors vs spending|AirBnB renting structure
+:-------------------------:|:-------------------------:
+![Visitors vs expenditures](./img/capital_report_master_card.png){ width=300px } | ![](./img/city_benchmark_room_type.png){width=300px} 
 
 Looking at other european cities :
 
-![](./img/city_benchmark_availability_30.png){width=300px}\ ![](./img/city_benchmark_price.png){width=300px} 
+Full appartments availability coming 30 days|Full appartments prices
+:-------------------------:|:-------------------------:
+![title 1](./img/city_benchmark_availability_30.png){width=300px} |  ![title2 ](./img/city_benchmark_price.png){width=300px} 
 
-and :
+
 
 
 The full renting of an appartment is strictly regulated in Berlin :it requires an authorization from the city Authorities, In 2016, [only 58 authorizations have been delivered by the city for 800 applications](http://www.salon.com/2017/06/30/how-the-berlin-government-could-rein-in-airbnb-and-protect-local-housing_partner/).
@@ -39,14 +39,6 @@ Using those data, we can identify professional hosts that potentially break the 
 
 
 ### Problem Statement
-
-
-
-In this section, you will want to clearly define the problem that you are trying to solve, including the strategy (outline of tasks) you will use to achieve the desired solution. You should also thoroughly discuss what the intended solution will be for this problem. Questions to ask yourself when writing this section:
-- _Is the problem statement clearly defined? Will the reader understand what you are expecting to solve?_
-- _Have you thoroughly discussed how you will attempt to solve the problem?_
-- _Is an anticipated solution clearly defined? Will the reader understand what results you are looking for?_
-
 Using those data, we can determine which features characterize the best professional hosts. With those selected features, we will then build different classification models and select the best to identify the professionals.
 
 Our aim is to predict whether an appartment will have an occupacy ratio higher or equals to the average ratio of Berlin's hotel (77% in 2015/2016) for the next 30 days.
@@ -60,45 +52,63 @@ To solve this problem, we proceed in the following steps :
 
 
 ### Metrics
-In this section, you will need to clearly define the metrics or calculations you will use to measure performance of a model or result in your project. These calculations and metrics should be justified based on the characteristics of the problem and problem domain. Questions to ask yourself when writing this section:
-- _Are the metrics you’ve chosen to measure the performance of your models clearly discussed and defined?_
-- _Have you provided reasonable justification for the metrics chosen based on the problem and solution?_
-
-
 In our context, the aim is to minimize the cost of investigating potential law breakers.
 To evaluate the quality of our classification model, we will use the standard metrics : recall and F1 Score.
-In our context, the recall is the percentage  of appartments we correctly predicted as professional.
+In our context, the recall is the percentage of appartments we correctly predicted as professional.
+We use the F1 score as ameasue of the overall performance of the classifier.
 
 
 ## II. Analysis
 _(approx. 2-4 pages)_
 
 ### Data Exploration
-In this section, you will be expected to analyze the data you are using for the problem. This data can either be in the form of a dataset (or datasets), input data (or input files), or even an environment. The type of data should be thoroughly described and, if possible, have basic statistics and information presented (such as discussion of input features or defining characteristics about the input or environment). Any abnormalities or interesting qualities about the data that may need to be addressed have been identified (such as features that need to be transformed or the possibility of outliers). Questions to ask yourself when writing this section:
-- _If a dataset is present for this problem, have you thoroughly discussed certain features about the dataset? Has a data sample been provided to the reader?_
-- _If a dataset is present for this problem, are statistics about the dataset calculated and reported? Have any relevant results from this calculation been discussed?_
-- _If a dataset is **not** present for this problem, has discussion been made about the input space or input data for your problem?_
-- _Are there any abnormalities or characteristics about the input space or dataset that need to be addressed? (categorical variables, missing values, outliers, etc.)_
+The dataset has been built via the  web scraping of the AirBnB website, thus we can considere this is a partial dump of the original  database. Formatted as a text file, there are around 100 features available per appartment : price, availability for the next days, picture of the appartment, number of reviews, coordinates, list of offered amenities, etc..
+
+|  Distribution of missing features |
+|:--:|
+|  ![](./img/missing_values.png){ width=300px } |
 
 
+\begin{table}[ht]
+\centering
+\begin{tabular}{lrrr}
+  \hline
+room\_type & total\_listing & \% reviewed & \% active \\ 
+  \hline
+Entire home/apt & 10285 & 80.83 & 30.85 \\ 
+  Private room & 10011 & 76.65 & 28.10 \\ 
+  Shared room & 280 & 69.29 & 30.42 \\ 
+   \hline
+\end{tabular}
+\end{table}
+
+
+In order to analyse the data, we first eliminate the listing that have no availability at all, meaning the host does not rent it.
+
+
+Unfortunately, we do not have the effective booking information (booking history, amount charged) for each appartment, but we can approximate them via the availability planning.
+
+Before making it modeling-ready, this raw dataset need to be processed.
 
 
 ### Exploratory Visualization
-In this section, you will need to provide some form of visualization that summarizes or extracts a relevant characteristic or feature about the data. The visualization should adequately support the data being used. Discuss why this visualization was chosen and how it is relevant. Questions to ask yourself when writing this section:
-- _Have you visualized a relevant characteristic or feature about the dataset or input data?_
-- _Is the visualization thoroughly analyzed and discussed?_
-- _If a plot is provided, are the axes, title, and datum clearly defined?_
+
+Looking at the dataset, we can see the distribution of appartments per multiple ownership :
+
+|   Listing per hosts |
+|:--:|
+|![](./img/listings_per_host.png){ width=300px }|
+
+There are around one third of active listing that are offered by an host who owns more than one listing. Those are our target population, i.e the professional renting full appartments.
 
 
-The AirBnB dataset for Berlin consists in a list of appartments with around 100 features :
+Number of reviews per listings rented|Availability per listings rented
+:-------------------------:|:-------------------------:
+|![Listing per hosts](./img/host_listing_counts_reviews.png){ width=300px }|![Listing per hosts](./img/host_listing_availability_30.png){ width=300px } 
 
 
-![Distribution of missing features](./img/missing_values.png){ width=300px }  ![Listing per hosts](./img/listing_counts.png){ width=300px }
+The above charts show that professional hosts have an higher number of reviews, but a also an higher availability.
 
-![Listing per hosts](./img/host_listing_counts_reviews.png){ width=300px }  ![Listing per hosts](./img/host_listing_availability_30.png){ width=300px } 
-
-
-- plot availability_30 vs listings count per host
 
 
 
@@ -107,6 +117,13 @@ In this section, you will need to discuss the algorithms and techniques you inte
 - _Are the algorithms you will use, including any default variables/parameters in the project clearly defined?_
 - _Are the techniques to be used thoroughly discussed and justified?_
 - _Is it made clear how the input data or datasets will be handled by the algorithms and techniques chosen?_
+
+We will implement three differents class of classification algorithm :
+
+- logistic regression as a benchmark,
+- Suppport Vector Machine with RBF kernel,
+- Xtra Gradient Boosting (XGBoost).
+- 
 
 ### Benchmark
 In this section, you will need to provide a clearly defined benchmark result or threshold for comparing across performances obtained by your solution. The reasoning behind the benchmark (in the case where it is not an established result) should be discussed. Questions to ask yourself when writing this section:

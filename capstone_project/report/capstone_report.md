@@ -19,9 +19,11 @@ The first member registered in 2008, and there are 20576 offers as of may 2017.
 In this study, we will focus on the full appartments to be rented on AirBnB in Berlin.
 
 For the context, here are some self-explanotory charts to understand the situationof Berlin amongst the others world-class cities  in term of tourism :
-Visitors vs spending|AirBnB renting structure
+
+
+Visitors vs spending| AirBnB renting structure
 :-------------------------:|:-------------------------:
-![Visitors vs expenditures](./img/capital_report_master_card.png){ width=300px } | ![](./img/city_benchmark_room_type.png){width=300px} 
+![Visitors vs expenditures](./img/capital_report_master_card.png){ width=300px }|![](./img/city_benchmark_room_type.png){width=300px} 
 
 Looking at other european cities :
 
@@ -140,9 +142,12 @@ Multihost PCA on 6 Vectors | Single host PCA on 6 Vectors
 :-------------------------:|:-------------------------:
 ![](./img/eigen_pic_multihost.png){width=300px} |  ![](./img/eigen_pic_singlehost.png){width=300px} 
 
-|   Reviews per language |
-|:--:|
-|![](./img/colors_rainbow_appartments.png){ width=400px }|
+Main colors in appartment pictures | Colors PCA
+:-------------------------:|:-------------------------:
+![](./img/colors_rainbow_appartments.png){ width=300px }|![](./img/PCA_colors_pictures_appartments.png){width=300px} 
+
+
+
 
 |   Reviews per language |
 |:--:|

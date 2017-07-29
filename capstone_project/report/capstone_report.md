@@ -136,6 +136,13 @@ Now we can chekc which features from the listing table are the most relevant to 
 |![](./img/top_features_xgb.png){ width=500px }|
 
 
+Multihost PCA on 6 Vectors | Single host PCA on 6 Vectors
+:-------------------------:|:-------------------------:
+![](./img/eigen_pic_multihost.png){width=300px} |  ![](./img/eigen_pic_singlehost.png){width=300px} 
+
+|   Reviews per language |
+|:--:|
+|![](./img/colors_rainbow_appartments.png){ width=400px }|
 
 |   Reviews per language |
 |:--:|
@@ -181,6 +188,9 @@ For the pictures, after having scrapped the pictures and converted them into num
 - compute the brightness and contrast,
 - compute the 5 top colors,
 - compute a PCA for the greyscale pictures.
+
+
+
 
 
 

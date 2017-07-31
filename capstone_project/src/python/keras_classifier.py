@@ -2,28 +2,38 @@ import numpy as np
 import pandas as pd
 
 from sklearn.model_selection import train_test_split
-from sklearn.grid_search import GridSearchCV
-from sklearn.metrics import confusion_matrix, classification_report
 
-from keras.wrappers.scikit_learn import KerasClassifier
+from sklearn.metrics import confusion_matrix, classification_report
 
 
 from keras.models import Sequential
 from keras.layers import Dense, Dropout, Activation
 from keras.layers.normalization import BatchNormalization
-from keras.callbacks import EarlyStopping
+from keras.callbacks import EarlyStopping, ModelCheckpoint
+
+import pickle
 
 
-df = pd.read_csv('data/all_cities/dataset_for_modeling.csv')
+df = pd.read_csv('data/all_cities/listing_cleansed_fillna.csv')
+
+df.drop('listings_per_host', axis=1, inplace=True)
+
+df.loc[df['maximum_nights'] > 365, 'maximum_nights'] = 365
+
+FEATURES = pickle.load(
+    open('src/python/best_features/features_RLR.p', 'rb'))
+
+#df = df.sample(frac=.3)
 
 
-params = {
-    'epochs': [300],
-    'batch_size': [256]
-}
+filepath = "weights-improvement-best.hdf5"
 
 
-filepath = "weights-improvement-{epoch:02d}-{val_acc:.2f}.hdf5"
+earlystop = EarlyStopping(
+    monitor='val_loss', patience=2,  verbose=1, mode='auto')
+
+checkpoint = ModelCheckpoint(
+    filepath=filepath, monitor='val_loss', verbose=1, save_best_only=True, mode='max')
 
 
 def balanced_subsample(y, size=None):
@@ -45,10 +55,11 @@ def balanced_subsample(y, size=None):
     return subsample
 
 
-def create_X_y():
+def create_X_y(FEATURES):
     TARGET_CLASSIFICATION = 'multihost'
     y = df[TARGET_CLASSIFICATION]
     X = df.drop(TARGET_CLASSIFICATION, axis=1)
+    X = df[FEATURES]
     rebalanced_index = balanced_subsample(y)
     X, y = X.loc[rebalanced_index], y.loc[rebalanced_index]
 
@@ -61,11 +72,11 @@ def create_X_y():
 
 def create_model():
 
-    earlystop = EarlyStopping(
-        monitor='val_loss', patience=0, verbose=0, mode='auto')
+    model = Sequential()
 
-    checkpoint = ModelCheckpoint(
-        filepath, monitor='val_acc', verbose=1, save_best_only=True, mode='max')
+    ####################################################
+    ############### MODEL 1 ############################
+    ####################################################
 
     # model.add(Dense(256, input_dim=X_train.shape[
     #           1], activation='relu', kernel_initializer='uniform'))
@@ -74,51 +85,46 @@ def create_model():
     # model.add(Dropout(0.5))
     # model.add(Dense(1, activation='sigmoid'))
 
-    model = Sequential()
-    model.add(Dense(256, input_dim=X_train.shape[
+    ####################################################
+    ############### MODEL 2 ############################
+    ####################################################
+
+    model.add(Dense(300, input_dim=X_train.shape[
               1], kernel_initializer='normal'))
     model.add(BatchNormalization())
     model.add(Activation('relu'))
-    model.add(Dropout(0.1))
+    model.add(Dropout(0.5))
 
     # we can think of this chunk as the hidden layer
-    model.add(Dense(128, kernel_initializer='normal'))
+    model.add(Dense(256, kernel_initializer='normal'))
     model.add(BatchNormalization())
     model.add(Activation('relu'))
-    model.add(Dropout(0.2))
+    model.add(Dropout(0.5))
 
     # we can think of this chunk as the output layer
     model.add(Dense(1, kernel_initializer='normal'))
     model.add(BatchNormalization())
     model.add(Activation('sigmoid'))
 
-    # model.compile(loss='binary_crossentropy',
-    #               optimizer='rmsprop',
-    #               metrics=['accuracy'])
+    ####################################################
+    ############### COMPILE############################
+    ####################################################
+
     model.compile(loss='binary_crossentropy',
                   optimizer='adam',
-                  metrics=['accuracy'], callbacks=[earlystop, checkpoint])
+                  metrics=['accuracy'])
     return model
 
 
-def cv_optimize(clf, parameters, Xtrain, ytrain, n_folds=5):
-    gs = GridSearchCV(clf, param_grid=params, cv=n_folds,
-                      n_jobs=-1, scoring="recall")
-    gs.fit(Xtrain, ytrain)
-
-    return gs.best_estimator_
-
-
-X_train, X_test, y_train, y_test, features = create_X_y()
+X_train, X_test, y_train, y_test, features = create_X_y(FEATURES)
 
 print "X_train.shape : ", X_train.shape
 
-clf = KerasClassifier(build_fn=create_model, verbose=1)
+model = create_model()
+model.fit(X_train.values, y_train.values, epochs=200,
+          batch_size=256, validation_split=0.3, callbacks=[earlystop, checkpoint])
 
-best_clf = cv_optimize(clf, params, X_train.values, y_train.values)
 
-print(best_clf)
-
-prediction = best_clf.predict(X_test.values)
+prediction = model.predict(X_test.values)
 print confusion_matrix(y_test.values, prediction > .5)
 print classification_report(y_test.values, prediction > .5)

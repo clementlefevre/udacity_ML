@@ -11,6 +11,7 @@ from keras.layers import Dense, Dropout, Activation
 from keras.layers.normalization import BatchNormalization
 from keras.callbacks import EarlyStopping, ModelCheckpoint
 
+
 import pickle
 
 
@@ -30,10 +31,10 @@ filepath = "weights-improvement-best.hdf5"
 
 
 earlystop = EarlyStopping(
-    monitor='val_loss', patience=2,  verbose=1, mode='auto')
+    monitor='val_loss', patience=20,  verbose=1, mode='auto')
 
 checkpoint = ModelCheckpoint(
-    filepath=filepath, monitor='val_loss', verbose=1, save_best_only=True, mode='max')
+    filepath=filepath, monitor='val_acc', verbose=1, save_best_only=True, mode='max')
 
 
 def balanced_subsample(y, size=None):
@@ -96,7 +97,7 @@ def create_model():
     model.add(Dropout(0.5))
 
     # we can think of this chunk as the hidden layer
-    model.add(Dense(256, kernel_initializer='normal'))
+    model.add(Dense(300, kernel_initializer='normal'))
     model.add(BatchNormalization())
     model.add(Activation('relu'))
     model.add(Dropout(0.5))
@@ -111,7 +112,7 @@ def create_model():
     ####################################################
 
     model.compile(loss='binary_crossentropy',
-                  optimizer='adam',
+                  optimizer='rmsprop',
                   metrics=['accuracy'])
     return model
 
@@ -122,7 +123,7 @@ print "X_train.shape : ", X_train.shape
 
 model = create_model()
 model.fit(X_train.values, y_train.values, epochs=200,
-          batch_size=256, validation_split=0.3, callbacks=[earlystop, checkpoint])
+          batch_size=128, validation_split=0.3, callbacks=[earlystop, checkpoint])
 
 
 prediction = model.predict(X_test.values)

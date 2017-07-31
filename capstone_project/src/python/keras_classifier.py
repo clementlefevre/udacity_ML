@@ -14,13 +14,16 @@ from keras.layers.normalization import BatchNormalization
 from keras.callbacks import EarlyStopping
 
 
-df = pd.read_csv('data/dataset_for_modeling.csv')
+df = pd.read_csv('data/all_cities/dataset_for_modeling.csv')
 
 
 params = {
     'epochs': [300],
     'batch_size': [256]
 }
+
+
+filepath = "weights-improvement-{epoch:02d}-{val_acc:.2f}.hdf5"
 
 
 def balanced_subsample(y, size=None):
@@ -43,14 +46,14 @@ def balanced_subsample(y, size=None):
 
 
 def create_X_y():
-    TARGET_CLASSIFICATION = 'is_multihost'
+    TARGET_CLASSIFICATION = 'multihost'
     y = df[TARGET_CLASSIFICATION]
     X = df.drop(TARGET_CLASSIFICATION, axis=1)
     rebalanced_index = balanced_subsample(y)
     X, y = X.loc[rebalanced_index], y.loc[rebalanced_index]
 
     X_train, X_test, y_train, y_test = train_test_split(
-        X, y, test_size=.2, stratify=y)
+        X, y, test_size=.2)
     features = pd.Series(X.columns)
 
     return X_train, X_test, y_train, y_test, features
@@ -60,6 +63,10 @@ def create_model():
 
     earlystop = EarlyStopping(
         monitor='val_loss', patience=0, verbose=0, mode='auto')
+
+    checkpoint = ModelCheckpoint(
+        filepath, monitor='val_acc', verbose=1, save_best_only=True, mode='max')
+
     # model.add(Dense(256, input_dim=X_train.shape[
     #           1], activation='relu', kernel_initializer='uniform'))
     # model.add(Dropout(0.5))
@@ -90,7 +97,7 @@ def create_model():
     #               metrics=['accuracy'])
     model.compile(loss='binary_crossentropy',
                   optimizer='adam',
-                  metrics=['accuracy'], callbacks=[earlystop])
+                  metrics=['accuracy'], callbacks=[earlystop, checkpoint])
     return model
 
 
@@ -104,7 +111,7 @@ def cv_optimize(clf, parameters, Xtrain, ytrain, n_folds=5):
 
 X_train, X_test, y_train, y_test, features = create_X_y()
 
-print X_train.shape
+print "X_train.shape : ", X_train.shape
 
 clf = KerasClassifier(build_fn=create_model, verbose=1)
 

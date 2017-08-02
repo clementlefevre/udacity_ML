@@ -18,7 +18,7 @@ The first member registered in 2008, and there are 20576 offers as of may 2017.
 
 In this study, we will focus on the full appartments to be rented on AirBnB in Berlin.
 
-For the context, here are some self-explanotory charts to understand the situationof Berlin amongst the others world-class cities  in term of tourism :
+For the context, here are some self-explanatory charts to understand the situation of Berlin amongst the others world-class cities  in term of tourism :
 
 
 Visitors vs spending| AirBnB renting structure
@@ -65,7 +65,7 @@ To solve this problem, we proceed in the following steps :
 
 |  Ratio of multihost per city |
 |:--:|
-|  ![](./img/cities_multihosting_ratio.png) |
+|  ![](./img/cities_multihosting_ratio.png){ width=300px } |
 
 
 
@@ -99,6 +99,8 @@ In order to analyse the data, we first eliminate the listing that have no availa
 Unfortunately, we do not have the effective booking information (booking history, amount charged) for each appartment, but we can approximate them via the availability planning.
 
 Then, we have to remove the 'zombie' host, online listing that are not active anymore. To proceed, we drop the listing for which the last review is older than two months and the availability for the next 30 days is zero :
+
+*Example for Berlin :*
 
 
 |    **room_type**    | **total_listing** | **% reviewed** | **% active** |
@@ -188,19 +190,17 @@ In this section, all of your preprocessing steps will need to be clearly documen
 - _Based on the **Data Exploration** section, if there were abnormalities or characteristics that needed to be addressed, have they been properly corrected?_
 - _If no preprocessing is needed, has it been made clear why?_
 
+The main listing does not reauires much preprocessing, if not split the amenities features, which in its original from combine the 100 differents possible amenities (from Dishwasher to children toys).
 
-The text reviews and apparments pictures need processing :
+The text reviews require a specific processing.
+We use the **detect_lang** package from google to indentify the language of each review.
+Then, we select the reviews written in english, vectorize them using the TFIDF method and finally reduce the dimensionality via the Principal Components Analsysis.
 
-For the reviews, first select the reviews written in english, vectorize them using the TFIDF method and finally reduce the dimensionality via the Principal Components Analsysis.
-
-For the pictures, after having scrapped the pictures and converted them into numpy arrays, we work in three steps :
+For the pictures, after having scrapped the pictures from the Airbnb website (110,020 pictures), and converted them into numpy arrays, we implement the following operations :
 
 - compute the brightness and contrast,
-- compute the 5 top colors,
+- compute the 5 top colors via a K-Means clustering on the the RGB features.
 - compute a PCA for the greyscale pictures.
-
-
-
 
 
 
@@ -209,6 +209,21 @@ In this section, the process for which metrics, algorithms, and techniques that 
 - _Is it made clear how the algorithms and techniques were implemented with the given datasets or input data?_
 - _Were there any complications with the original metrics or techniques that required changing prior to acquiring a solution?_
 - _Was there any part of the coding process (e.g., writing complicated functions) that should be documented?_
+
+The main challenge for this model is the feature selection. With 300 differentes features, and very low correlation with the target (best correlation, **maximum nights**, scores  ${\rho}$ = 0.145 with the **multi-host** target.)
+
+To select the best features, i used three differents techniques :
+
+- the RandomizedLogisticRegressor from sklearn to extract the best features,
+- KBest features selection based on both Chi2 and FScore,
+- The best F-score features on a basic XGBoost classifier.
+
+
+This results in around 100 features.
+
+
+
+
 
 ### Refinement
 In this section, you will need to discuss the process of improvement you made upon the algorithms and techniques you used in your implementation. For example, adjusting parameters for certain models to acquire improved solutions would fall under the refinement category. Your initial and final solutions should be reported, as well as any significant intermediate results as necessary. Questions to ask yourself when writing this section:
@@ -226,6 +241,11 @@ In this section, the final model and any supporting qualities should be evaluate
 - _Has the final model been tested with various inputs to evaluate whether the model generalizes well to unseen data?_
 - _Is the model robust enough for the problem? Do small perturbations (changes) in training data or the input space greatly affect the results?_
 - _Can results found from the model be trusted?_
+
+
+|  ROC curve for XGB model |
+|:--:|
+|  ![](./img/ROC_XGB.png){ width=300px } |
 
 ### Justification
 In this section, your model’s final solution and its results should be compared to the benchmark you established earlier in the project using some type of statistical analysis. You should also justify whether these results and the solution are significant enough to have solved the problem posed in the project. Questions to ask yourself when writing this section:

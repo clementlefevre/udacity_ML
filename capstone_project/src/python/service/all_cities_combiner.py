@@ -15,7 +15,7 @@ print city_folder
 df_all_listings_cleansed = pd.DataFrame()
 
 
-FILE = ['pictures_contrasts_brightness']
+FILE = ['listings']
 
 for F in FILE:
 
@@ -27,6 +27,14 @@ for F in FILE:
 
         if F == 'reviews_PCA':
             df = df.iloc[:, 0:20]
+
+        if F == 'listings':
+            filter_cols = ['host_since', 'first_review',
+                           'last_review', 'room_type', 'availability_30', 'price']
+
+            df.price = df.price.replace('[\$,)]', '', regex=True).replace(
+                '[(]', '-', regex=True).astype(float)
+            df = df[filter_cols]
 
         df['city'] = city
         df_all_listings_cleansed = pd.concat(

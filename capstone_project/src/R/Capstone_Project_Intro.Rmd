@@ -70,7 +70,7 @@ save_to_png(path)
 ```
 # Benchmark AirBnB Cities
 ```{r}
-df<-read.csv('../../data/benchmark_capitals/all_listings.csv',stringsAsFactors = FALSE)
+df<-read.csv('../../data/all_cities/listings_all.csv',stringsAsFactors = FALSE)
 df<- df %>% mutate_at(c('host_since','first_review','last_review'), funs(new_=ymd(.)))
 head(df)
 dim(df)
@@ -104,8 +104,10 @@ save_to_png(path)
 ```{r}
 path <- get_path_var('city_benchmark_room_type')
 pdf(path$pdf, width=8,height=8)
+
+df.profi$city<-as.factor(df.profi$city)
 g <- ggplot(df.profi, aes(city))
-g+ geom_bar(aes(fill = room_type))+ coord_flip() +scale_fill_manual("legend", values = c("Entire home/apt" = airBColor, "Private room" = airBColor2,"Shared room" = "grey"))+theme(text = element_text(size=14, family="CM Roman"),legend.title=element_blank(),axis.title.y=element_blank())+labs(y=' ')
+g+ geom_bar(aes(fill = room_type))+ coord_flip() +scale_fill_manual("legend", values = c("Entire home/apt" = airBColor, "Private room" = airBColor2,"Shared room" = "grey"))+theme(text = element_text(size=14, family="CM Roman"),legend.title=element_blank(),axis.title.y=element_blank())+labs(y=' ')+scale_x_discrete(name="", limits = rev(levels(df.profi$city)))
 
 dev.off()
 save_to_png(path)
@@ -214,3 +216,29 @@ ggplot(group.languages.reviews,aes(x=reorder(language,-reviews),y=reviews))+ geo
 dev.off()
 save_to_png(path)
 ```
+
+# Ratio mulltihost per city for active full appartments
+
+```{r}
+df_all_cities <- read.csv('../../data/all_cities/listing_cleansed_fillna.csv',stringsAsFactors = FALSE)
+proper=function(x) paste0(toupper(substr(x, 1, 1)), tolower(substring(x, 2)))
+
+df_all_cities$city <- sapply(df_all_cities$city,proper)
+df_all_cities<-df_all_cities %>% mutate(multihost,multihost=ifelse(multihost==0,'single_host','multi_host'))
+
+```
+
+```{r}
+path <- get_path_var('cities_multihosting_ratio')
+pdf(path$pdf, width=8,height=8)
+
+group.multihost <- df_all_cities %>% group_by(city,multihost) %>% summarise(total = n())
+group.multihost$city<-as.factor(group.multihost$city)
+group.multihost<-group.multihost %>% spread(multihost,total) %>% mutate(ratio_multihosts= multi_host/(multi_host+single_host)*100, total_listings =multi_host+single_host ) 
+ggplot(group.multihost,aes(x=city,y=ratio_multihosts,size=total_listings))+geom_point(color=airBColor2)+ coord_flip()+scale_x_discrete(name="", limits = rev(levels(group.multihost$city)))+labs(y='% multihost')+theme(text = element_text(size=14, family="CM Roman")) +scale_size_continuous(range = c(1, 10))
+
+dev.off()
+save_to_png(path)
+```
+
+

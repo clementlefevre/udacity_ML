@@ -63,6 +63,11 @@ To solve this problem, we proceed in the following steps :
 - define the best features,
 - run different classification models to select the best one.
 
+|  Ratio of multihost per city |
+|:--:|
+|  ![](./img/cities_multihosting_ratio.png) |
+
+
 
 ### Metrics
 In our context, the aim is to minimize the cost of investigating potential law breakers.

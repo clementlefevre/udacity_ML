@@ -15,7 +15,7 @@ print city_folder
 df_all_listings_cleansed = pd.DataFrame()
 
 
-FILE = ['listings']
+FILE = ['reviews_PCA']
 
 for F in FILE:
 

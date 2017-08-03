@@ -88,15 +88,15 @@ def clean_listing(city_name):
 
     print "reviews after merge with language shape {}".format(df_reviews.shape)
 
-    if os.path.isfile(root_city_path + 'reviews_PCA.csv'):
-        return
+    # if os.path.isfile(root_city_path + 'reviews_PCA.csv'):
+    #     return
 
     # Once each reviews has been labelled, we can proceed to a short
     # analysis regarding the relationships between the languages reviews
     # and the appartment rating.
 
     df_reviews = pd.merge(df_reviews, df_listing[
-                          ['listing_id', 'multihost', 'host_name', 'review_scores_rating']], on='listing_id')
+                          ['listing_id', 'host_name', 'review_scores_rating']], on='listing_id')
 
     print " reviews after merge with listing shape {}".format(df_reviews.shape)
     # ### Drop cancelled reservations
@@ -118,6 +118,8 @@ def clean_listing(city_name):
         ~df_reviews_eng.review_scores_rating.isnull()]
     df_reviews_eng = df_reviews_eng[
         ~df_reviews_eng.comments.str.contains('The host canceled this reservation')]
+    df_reviews_eng = df_reviews_eng[
+        ~df_reviews_eng.comments.str.contains('reservation was canceled')]
 
     df_reviews_grouped = df_reviews_eng.groupby(
         'listing_id').agg({'comments': concat_comments})
@@ -149,16 +151,18 @@ def clean_listing(city_name):
 
     stop = nltk.corpus.stopwords.words('english')
     stop = list(
-        set(stop) - set(['no', 'not', 'never', 'don\'t', 'couldn\'t'])) + all_host_names
+        set(stop) - set(['no', 'not', 'never', 'don\'t', 'couldn\'t'])) + all_host_names + ['-']
+
+    df_listing_with_reviews.comments = df_listing_with_reviews.comments.apply(
+        lambda x: x.replace('no comment', ' '))
 
     X = df_listing_with_reviews.comments.values
-    y = df_listing_with_reviews.multihost.values
 
     vectorizer = TfidfVectorizer(ngram_range=(
-        2, 3), tokenizer=tokenizer_porter, stop_words=stop, max_features=20000)
+        2, 3), tokenizer=tokenizer_porter, stop_words=stop, max_features=5000)
 
     scaler = MinMaxScaler()
-    n_components = 300
+    n_components = 30
     svd = TruncatedSVD(n_components=n_components)
     X_all_reviews = vectorizer.fit_transform(X).todense()
     X_all_reviews_TFIDF_scaled = scaler.fit_transform(X_all_reviews)

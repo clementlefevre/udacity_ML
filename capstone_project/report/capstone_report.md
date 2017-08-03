@@ -22,7 +22,6 @@ In this study, we will focus on the full appartments offered on AirBnB in Europe
 For the context, here are some charts to understand the situation of Berlin amongst the others world-class cities  in term of tourism :
 
 
-
 **active listing** : listing with an availability for the next 90 days higher than zero and with at least one review in the last 60 days.
 
 Visitors vs spending| AirBnB renting structure
@@ -39,7 +38,6 @@ Full appartments availability coming 30 days|Full appartments prices
 ![title 1](./img/city_benchmark_availability_30.png){width=300px} |  ![title2 ](./img/city_benchmark_price.png){width=300px} 
 
 In term of price and availability, Berin ranks in the average value on the european scale.
-
 
 
 Since may 2016, the renting of full appartments is strictly regulated in Berlin : it requires an authorization from the city Authorities, In 2016, [only 58 authorizations have been delivered by the city for 800 applications](http://www.salon.com/2017/06/30/how-the-berlin-government-could-rein-in-airbnb-and-protect-local-housing_partner/).
@@ -63,6 +61,7 @@ Then, looking at the localisation as of may 2017 :
 
 
 We observe three clusters for the multihost listings in Berlin : 
+
 - In Mitte,
 - In Friedrichshain,
 - In Neukoeln.
@@ -70,11 +69,7 @@ We observe three clusters for the multihost listings in Berlin :
 One of the consequence of the spread of such a disruptive platform is a shortage of affordable housing for the locals. 
 InsideAirBnB, an online activist organization, regulary scraps the entire AirBnB offers for a selection of cities, including Berlin.
 
-
 Using those data, we can identify professional hosts that potentially break the local regulation.
-
-
-
 
 ### Problem Statement
 Using those data, we can determine which features characterize the best professional hosts (aka *multihosts*), ie hosts with more than one active listing.
@@ -82,7 +77,7 @@ Using those data, we can determine which features characterize the best professi
 
 |  Ratio of multihost per city |
 |:--:|
-|  ![](./img/cities_multihosting_ratio.png){ width=200px } |
+|  ![](./img/cities_multihosting_ratio.png){ width=400px } |
 
 With those selected features, we then build classification models and select the best to identify the professionals.
 
@@ -160,20 +155,12 @@ The above charts show that professional hosts have an higher number of reviews, 
 
 
 
-Multihost PCA on 6 Vectors | Single host PCA on 6 Vectors
-:-------------------------:|:-------------------------:
-![](./img/eigen_pic_multihost.png){width=300px} |  ![](./img/eigen_pic_singlehost.png){width=300px} 
-
-Main colors in appartment pictures | Colors PCA
-:-------------------------:|:-------------------------:
-![](./img/colors_rainbow_appartments.png){ width=300px }|![](./img/PCA_colors_pictures_appartments.png){width=300px} 
-
-
-
 
 |   Reviews per language |
 |:--:|
 |![](./img/group_language_reviews.png){ width=300px }|
+
+English is the overwhemly language for reviews, we will focus then on it for the further text analysis.
 
 
 ### Algorithms and Techniques
@@ -196,42 +183,137 @@ We will thus use the Logistic classifier as benchmark and try to get a recall va
 
 
 
-III. Methodology
+## III. Methodology
 _(approx. 3-5 pages)_
 
 ### Data Preprocessing
-In this section, all of your preprocessing steps will need to be clearly documented, if any were necessary. From the previous section, any of the abnormalities or characteristics that you identified about the dataset will be addressed and corrected here. Questions to ask yourself when writing this section:
-- _If the algorithms chosen require preprocessing steps like feature selection or feature transformations, have they been properly documented?_
-- _Based on the **Data Exploration** section, if there were abnormalities or characteristics that needed to be addressed, have they been properly corrected?_
-- _If no preprocessing is needed, has it been made clear why?_
-
 - **Main listing**
 The main listing does not requires much preprocessing, if not split the amenities features, which in its original form combine the 100 differents possible amenities (from Dishwasher to children toys) in a single column.
 
 - **Text reviews**
 The text reviews do require a specific processing.
 We use the **detect_lang** package from google to identify the language of each review.
-Then, we select the reviews written in english, vectorize them using the TFIDF method and finally reduce the dimensionality via the Principal Components Analsysis for each city.
+Then, we select the reviews written in english, stemm the text with the Porter method, vectorize them using the TFIDF (term frequency-inverse document frequency) method on 2 to 3 ngrams, and finally reduce the dimensionality via the Principal Components Analsysis for each city.
+
+
+Using a multinomial Bayesian classifier, we can get a rough idea of the text reviews weights :
+
+
+| **Value**  |    **Single Host**    | **Value** |   **Multihost**   |
+|:----------:|:---------------------:|:---------:|:-----------------:|
+| **-11.87** |        - vinni        |  -6.063   |     apart wa      |
+| **-11.87** |      emili apart      |   -6.27   |    no comment     |
+| **-11.87** |       emili wa        |   -6.49   |   everyth need    |
+| **-11.87** |       etienn wa       |  -6.569   |      wa veri      |
+| **-11.87** |        imm wa         |  -6.649   |   recommend thi   |
+| **-11.87** |        lar wa         |  -6.695   |     wa great      |
+| **-11.87** |      lar wa veri      |  -6.696   |    great locat    |
+| **-11.87** |      madelin wa       |  -6.703   |   would definit   |
+| **-11.87** |      marylis wa       |  -6.706   |      - apart      |
+| **-11.87** |       mauric wa       |  -6.738   | public transport  |
+| **-11.87** |      stay emili       |  -6.782   |      - great      |
+| **-11.87** |      stay vinni       |  -6.803   |    veri close     |
+| **-11.87** |       viliu wa        |  -6.876   |     thi apart     |
+| **-11.87** |      vinni great      |  -6.914   |    veri clean     |
+| **-11.87** |      vinni place      |  -6.965   |      host wa      |
+| **-11.87** |       vinni wa        |  -6.983   |   walk distanc    |
+| **-11.84** |       mathia wa       |  -7.032   |     veri help     |
+| **-11.78** |       marku wa        |  -7.042   |     wa clean      |
+| **-11.74** |       live flat       |   -7.05   |    recommend -    |
+| **-11.7**  |    quickli answer     |  -7.069   |      gave us      |
+| **-11.65** |       week felt       |  -7.083   |  would recommend  |
+| **-11.63** | neighborhood friendli |  -7.126   |     berlin -      |
+| **-11.6**  |      suggest wa       |  -7.147   |    minut walk     |
+| **-11.59** |    commun clearli     |  -7.161   |      - veri       |
+| **-11.56** |     stay neuklln      |  -7.169   |    well equip     |
+| **-11.56** |     stay wa also      |  -7.184   |     veri well     |
+| **-11.56** |      left us map      |  -7.206   |    stay apart     |
+| **-11.56** |    journey berlin     |  -7.221   |     veri good     |
+| **-11.54** |     wa veri relax     |  -7.224   |       - wa        |
+| **-11.53** |   comfort wellequip   |  -7.225   |     place wa      |
+| **-11.53** |     ha love apart     |  -7.231   |    locat veri     |
+| **-11.52** |   nice flat everyth   |  -7.251   |    apart veri     |
+| **-11.52** |      neuklln wa       |  -7.252   |      stay -       |
+| **-11.51** |     nice place wa     |   -7.26   |     come back     |
+| **-11.51** |        klau wa        |  -7.268   | highli recommend  |
+| **-11.5**  |   home neighborhood   |  -7.297   |     veri nice     |
+| **-11.5**  |      person left      |  -7.299   |    great apart    |
+| **-11.49** |    veri easi flat     |  -7.302   |     thi place     |
+| **-11.49** |    recommend sure     |  -7.305   |      thi wa       |
+| **-11.47** |     surround veri     |  -7.307   | definit recommend |
+
+
+PCA on text reviews :
+
+|  PC1 - PC2 on text reviews |
+|:--:|
+|![](./img/PCA_reviews.png){ width=400px }|
+
+The first two PC for each city explain in average **20% of the variance of the Tfidf vectors**, which is pretty low compared to the greyscale PC.
+
+
+
+TFIDF on 5000 elements, highest weights on PCA with 2 components :
+
+
+index | PC1 | PC2
+---- | ---- | ----
+apart wa | 0.28 | -0.34
+wa veri | 0.2 | -0.2
+everyth need | 0.16 | 0.02
+would definit | 0.15 | 0.22
+recommend thi | 0.15 | 0.36
+public transport | 0.13 | -0.075
+veri clean | 0.12 | -0.12
+veri help | 0.11 | -0.081
+great locat | 0.1 | 2.7e-06
+wa great | 0.1 | -0.03
+stay apart | 0.096 | -0.019
+veri nice | 0.094 | -0.05
+wa clean | 0.087 | -0.15
+flat wa | 0.086 | -0.025
+walk distanc | 0.085 | 0.011
+thi apart | 0.085 | 0.083
+highli recommend | 0.084 | 0.13
+minut walk | 0.082 | -0.036
+apart veri | 0.081 | -0.018
+wa veri help | 0.081 | -0.09
+
 
 - **Appartements pictures**
-For the pictures, after having scrapped the pictures from the Airbnb website (110,020 pictures),we implement the following operations :
+
+For the pictures, after having scrapped the pictures from the Airbnb website (110,020 pictures), we implement the following operations :
 
 - compute the brightness and contrast for each picture,
 - compute the 5 top colors via a K-Means clustering on the the RGB features for each picture
 - compute a greyscale numpy array for each picture.
-- compute a PCA for each city.
+- compute a PCA of the greyscale arraus for each city.
+
+Multihost : PCA on 6 first Vectors | Single host : PCA on 6 first Vectors
+:-------------------------:|:-------------------------:
+![](./img/eigen_pic_multihost.png){width=300px} |  ![](./img/eigen_pic_singlehost.png){width=300px} 
+
+
+
+Regarding the color clustering, the result are visually not significants :
+
+Main colors in appartment pictures | Colors PCA
+:-------------------------:|:-------------------------:
+![](./img/colors_rainbow_appartments.png){ width=300px }|![](./img/PCA_colors_pictures_appartments.png){width=300px} 
+
+Thus, colors clustering has been removed from the features.
 
 
 The PCA implementation at the level of the city is justified by the limited computing resources. Otherwise, it would have been optimal to run a PCA on both greyscale picture and TFIDF text vectors on the whole dataset.
 
 
 
-### Implementation
-In this section, the process for which metrics, algorithms, and techniques that you implemented for the given data will need to be clearly documented. It should be abundantly clear how the implementation was carried out, and discussion should be made regarding any complications that occurred during this process. Questions to ask yourself when writing this section:
-- _Is it made clear how the algorithms and techniques were implemented with the given datasets or input data?_
-- _Were there any complications with the original metrics or techniques that required changing prior to acquiring a solution?_
-- _Was there any part of the coding process (e.g., writing complicated functions) that should be documented?_
+- **Reviews frequency and language ratio**
 
+For the review languages, i compute for each listing the ratio of reviews for each language.
+For the frequency of the reviews, i aggregated the number of reviews in 11 bins : from **less than 1 day since the scraping date**, to **more than 200 days since scraping date**
+
+### Implementation
 The main challenge for this model is the feature selection. With 300 differentes features, and very low correlation with the target (best correlation, **maximum nights**, scores  ${\rho}$ = 0.145 with the **multi-host** target.)
 
 
@@ -244,7 +326,7 @@ To select the most relevant features from the listing table to predict the multi
 - KBest features selection based on Chi2 and FScore,
 - best F-score features from a basic XGBoost classifier.
 
-When those four list are combine, we obtain a list of 100 features.
+When those four list are combined, we obtain a list of 100 features.
 
 For this we use the ${\chi}^2$ test on the numerical values :
 
@@ -265,68 +347,110 @@ For this we use the ${\chi}^2$ test on the numerical values :
 
 
 
+
+
 ### Refinement
-In this section, you will need to discuss the process of improvement you made upon the algorithms and techniques you used in your implementation. For example, adjusting parameters for certain models to acquire improved solutions would fall under the refinement category. Your initial and final solutions should be reported, as well as any significant intermediate results as necessary. Questions to ask yourself when writing this section:
-- _Has an initial solution been found and clearly reported?_
-- _Is the process of improvement clearly documented, such as what techniques were used?_
-- _Are intermediate and final solutions clearly reported as the process is improved?_
+I used the different combination of features :
+
+- with the RandomizedLogisticRegressor features only,
+- with the 20 ${\chi}^2$ best Features,
+- with the 20 F-score best features,
+- with the 20 best XGBoost Faeatures,
+- with all the features combined.
+
+And applied them on classification models :
+
+- logistics regressor,
+- random Forest Classifier,
+- XGBoost Classifier
+- A Neural Net with a relu activation in input and a sigmoid in output with an adam optimizer.
+
+
+Before applying the train/test split, i first rebalanced the original dataset (1/3 multihost vs 2/3 single host) to get a 50/50 distribution.
+
+
+Using a standard Logistic Regressor on the features provided by the RandomizedLogisticRegressor, we can reach an accuracy of 76%, with a recall of 77%. Lowest results were provided by the Random Forest without tuning, and the Keras Neural net got the same result as the logistics regressor.
+
+It is finally the XGBoost Classifier that got both 80% in accuracy and recall.
+
 
 
 ## IV. Results
 _(approx. 2-3 pages)_
 
 ### Model Evaluation and Validation
-In this section, the final model and any supporting qualities should be evaluated in detail. It should be clear how the final model was derived and why this model was chosen. In addition, some type of analysis should be used to validate the robustness of this model and its solution, such as manipulating the input data or environment to see how the model’s solution is affected (this is called sensitivity analysis). Questions to ask yourself when writing this section:
-- _Is the final model reasonable and aligning with solution expectations? Are the final parameters of the model appropriate?_
-- _Has the final model been tested with various inputs to evaluate whether the model generalizes well to unseen data?_
-- _Is the model robust enough for the problem? Do small perturbations (changes) in training data or the input space greatly affect the results?_
-- _Can results found from the model be trusted?_
+With a cross-validation of the training set on 5 folds on a 12231 samples (training set)  and 8154 testing samples, we get the following results :
 
+_Recall:_ 0.79% (+/- 0.02)
+
+_confusion matrix on the testing set :_
+
+   /  | single host | multihost
+---- | ---- | ----
+single host|3216 | 886
+multihost|829 |3223
+
+_classification matrix on the testing set :_
+
+
+/|precision|recall|f1-score|support
+---- | ---- | ----| ----
+single host    |   0.80   |   0.78   |   0.79   |  4102
+multi host    |  0.78   |   0.80   |   0.79    |  4052
+avg / total|       0.79   |   0.79    |  0.79   |   8154
+
+
+The fact i used cross-validation and evaluate the model on the testing set after a random balanced sampling makes us confident of the reliability of the result.
+
+
+_ROC Curve for the XGBoost Classifier_ :
 
 |  ROC curve for XGB model |
 |:--:|
 |  ![](./img/ROC_XGB.png){ width=300px } |
 
 ### Justification
-In this section, your model’s final solution and its results should be compared to the benchmark you established earlier in the project using some type of statistical analysis. You should also justify whether these results and the solution are significant enough to have solved the problem posed in the project. Questions to ask yourself when writing this section:
-- _Are the final results found stronger than the benchmark result reported earlier?_
-- _Have you thoroughly analyzed and discussed the final solution?_
-- _Is the final solution significant enough to have solved the problem?_
+Though the XGB model outperforms the benchmark (Logistics Regressor), it is still does not reach our 90% recall objectif, making it hardly production-grade. We could raise the standard 0.5 probability threshold to 0.7 and get a better recall.
 
 
 ## V. Conclusion
 _(approx. 1-2 pages)_
 
 ### Free-Form Visualization
-In this section, you will need to provide some form of visualization that emphasizes an important quality about the project. It is much more free-form, but should reasonably support a significant result or characteristic about the problem that you want to discuss. Questions to ask yourself when writing this section:
-- _Have you visualized a relevant or important quality about the problem, dataset, input data, or results?_
-- _Is the visualization thoroughly analyzed and discussed?_
-- _If a plot is provided, are the axes, title, and datum clearly defined?_
+When looking at the first 2 PC of the entire features set PCA :
+
+|  PC1 vs PC2 all features |
+|:--:|
+|  ![](./img/PCA_all_features.png){ width=300px } |
+
+From this chart, it is obvious that the two categories are hardly separable.
+
+
+
+|  Top 10 feature for the XGB Classifier |
+|:--:|
+|  ![](./img/XGB_final_Top_features_fscore.png){ width=300px } |
+
+
 
 ### Reflection
-In this section, you will summarize the entire end-to-end problem solution and discuss one or two particular aspects of the project you found interesting or difficult. You are expected to reflect on the project as a whole to show that you have a firm understanding of the entire process employed in your work. Questions to ask yourself when writing this section:
-- _Have you thoroughly summarized the entire process you used for this project?_
-- _Were there any interesting aspects of the project?_
-- _Were there any difficult aspects of the project?_
-- _Does the final model and solution fit your expectations for the problem, and should it be used in a general setting to solve these types of problems?_
+The objective was ambitious and the data available have required more work than the modeling phase.
+When i first used the data for Berlin only, the size of the dataset was not large enough to get stable recall values on the dataset. I then had to extend the scope to thirteen european cities.
+Though, the recall obtain (80% at best) is not satisfying.
+
+Morevoer, I did put heavy expectation on the neural net, but after hundreds of iteration the model stuck on the validation recall of 76%, i.e. as good as a basic logistics regression.
+
+There is a major flaw in my project : the defition of professional is per se not accurate ; one professional might offer only one listing on Airbnb, or use two differents identities to rent its appartments.
+
+
 
 ### Improvement
-In this section, you will need to provide discussion as to how one aspect of the implementation you designed could be improved. As an example, consider ways your implementation can be made more general, and what would need to be modified. You do not need to make this improvement, but the potential solutions resulting from these changes are considered and compared/contrasted to your current solution. Questions to ask yourself when writing this section:
-- _Are there further improvements that could be made on the algorithms or techniques you used in this project?_
-- _Were there algorithms or techniques you researched that you did not know how to implement, but would consider using if you knew how?_
-- _If you used your final solution as the new benchmark, do you think an even better solution exists?_
+If my time was not constrained, i would add more features : profile pictures of the guest, define a list of touristic/interest location per city and compute the distance to it.
+
+I used the *tpot* python package to identify the best model possible (excluding the deep learning option), and the best proposal was the XGBoost. As the categories are definitively not lineary separable, i would put more emphasis on a SVM classifier with a RBF kernel, which requires lots of hyper-parameter tuning.
+
 
 -----------
 
-**Before submitting, ask yourself. . .**
 
-- Does the project report you’ve written follow a well-organized structure similar to that of the project template?
-- Is each section (particularly **Analysis** and **Methodology**) written in a clear, concise and specific fashion? Are there any ambiguous terms or phrases that need clarification?
-- Would the intended audience of your project be able to understand your analysis, methods, and results?
-- Have you properly proof-read your project report to assure there are minimal grammatical and spelling mistakes?
-- Are all the resources used for this project correctly cited and referenced?
-- Is the code that implements your solution easily readable and properly commented?
-- Does the code execute without error and produce results similar to those reported?
 
-A footnote [^1]
-[^1]: Here is the footnote. 

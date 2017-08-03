@@ -403,8 +403,8 @@ multihost|829 |3223
 _classification matrix on the testing set :_
 
 
- /| precision | recall | f1-score | support
----- | ---- | ---- | ----
+ /   | precision | recall | f1-score | support
+---- | ----      | ----   | ---- |
 single host    |   0.80   |   0.78   |   0.79   |  4102
 multi host    |  0.78   |   0.80   |   0.79    |  4052
 avg / total|       0.79   |   0.79    |  0.79   |   8154

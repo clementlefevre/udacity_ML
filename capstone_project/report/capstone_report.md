@@ -12,33 +12,44 @@ July 31st, 2017
 _(approx. 1-2 pages)_
 
 ### Project Overview
-AirBnB is an online platform for accomodation. Since its launch in 2008, it provides now 3,000,000 lodging listings in 65,000 cities and 191 countries (source : wikipedia)
-In Berlin, amongst the 17810 registered hosts, 13% are considered as active users (the last review was done in the last 10 days).
-The first member registered in 2008, and there are 20576 offers as of may 2017.
+AirBnB is an online platform for accomodation. Since its launch in 2008, it provides now 3,000,000 lodging listings in 65,000 cities and 191 countries (source : *wikipedia*).
 
-In this study, we will focus on the full appartments to be rented on AirBnB in Berlin.
+In Berlin, amongst the 17,810 registered hosts, 13% are considered as active users (the last review was done in the last 10 days).
+The first member registered in 2008, and there are 20,576 offers as of may 2017, 7700 being considered as active*.
 
-For the context, here are some self-explanatory charts to understand the situation of Berlin amongst the others world-class cities  in term of tourism :
+In this study, we will focus on the full appartments offered on AirBnB in Europe, with a focus on Berlin.
 
+For the context, here are some charts to understand the situation of Berlin amongst the others world-class cities  in term of tourism :
+
+
+
+**active listing** : listing with an availability for the next 90 days higher than zero and with at least one review in the last 60 days.
 
 Visitors vs spending| AirBnB renting structure
 :-------------------------:|:-------------------------:
 ![Visitors vs expenditures](./img/capital_report_master_card.png){ width=300px }|![](./img/city_benchmark_room_type.png){width=300px} 
 
-Looking at other european cities :
+
+For a population of 3,5 Millions inhabitants, Berlin has a relatively low number of active offers compared to Amsterdam (population 0,85 Millions) or Barcelona (population 1,6 Millions).
+
+
 
 Full appartments availability coming 30 days|Full appartments prices
 :-------------------------:|:-------------------------:
 ![title 1](./img/city_benchmark_availability_30.png){width=300px} |  ![title2 ](./img/city_benchmark_price.png){width=300px} 
 
+In term of price and availability, Berin ranks in the average value on the european scale.
 
 
 
-The full renting of an appartment is strictly regulated in Berlin :it requires an authorization from the city Authorities, In 2016, [only 58 authorizations have been delivered by the city for 800 applications](http://www.salon.com/2017/06/30/how-the-berlin-government-could-rein-in-airbnb-and-protect-local-housing_partner/).
+Since may 2016, the renting of full appartments is strictly regulated in Berlin : it requires an authorization from the city Authorities, In 2016, [only 58 authorizations have been delivered by the city for 800 applications](http://www.salon.com/2017/06/30/how-the-berlin-government-could-rein-in-airbnb-and-protect-local-housing_partner/).
 
-One of the consequence of the spread of such a disruptive platform is a shortage of affordable housing for the locals. 
-InsideAirBnB, an online activist organization, regulary scraps the entire AirBnB offers for a selection of cities, including Berlin.
-Using those data, we can identify professional hosts that potentially break the local regulation.
+On the chart below, we see the effect of this regulation : the numbers of listings drops, then rise again, with a similar trend for the price.
+
+*see* [Airbnb Regulation: How is New Legislation Impacting the Growth of Short-Term Rentals?](http://blog.airdna.co/effects-airbnb-regulation/?utm_content=buffer896bb&utm_medium=social&utm_source=twitter.com&utm_campaign=buffer) for more details.
+
+
+
 
 Evolution of active listings in Berlin | Evolution of prices
 :-------------------------:|:-------------------------:
@@ -51,30 +62,49 @@ Then, looking at the localisation as of may 2017 :
 |  ![](./img/geo_map_multihosting.png) |
 
 
-### Problem Statement
-Using those data, we can determine which features characterize the best professional hosts. With those selected features, we will then build different classification models and select the best to identify the professionals.
+We observe three clusters for the multihost listings in Berlin : 
+- In Mitte,
+- In Friedrichshain,
+- In Neukoeln.
 
-Our aim is to predict whether an appartment will have an occupacy ratio higher or equals to the average ratio of Berlin's hotel (77% in 2015/2016) for the next 30 days.
+One of the consequence of the spread of such a disruptive platform is a shortage of affordable housing for the locals. 
+InsideAirBnB, an online activist organization, regulary scraps the entire AirBnB offers for a selection of cities, including Berlin.
+
+
+Using those data, we can identify professional hosts that potentially break the local regulation.
+
+
+
+
+### Problem Statement
+Using those data, we can determine which features characterize the best professional hosts (aka *multihosts*), ie hosts with more than one active listing.
+
+
+|  Ratio of multihost per city |
+|:--:|
+|  ![](./img/cities_multihosting_ratio.png){ width=200px } |
+
+With those selected features, we then build classification models and select the best to identify the professionals.
+
+This model should identify at leadt 90% of the full appartments managed by a professionals.
 
 To solve this problem, we proceed in the following steps :
 
 - filter the dataset on the appartments (i.e full appartments) likely to be offered by professionals,
-- process the reviews text and appartments pictures and convert them into usable features,
-- define the best features,
-- run different classification models to select the best one.
-
-|  Ratio of multihost per city |
-|:--:|
-|  ![](./img/cities_multihosting_ratio.png){ width=300px } |
-
+- process the raw listing provided by InsideAirBnB, the reviews text and appartments pictures,
+- convert those data into usable features,
+- identify the best features,
+- run different classification models
+- select the best one.
 
 
 ### Metrics
-In our context, the aim is to minimize the cost of investigating potential law breakers.
-To evaluate the quality of our classification model, we will use the standard metrics : recall and F1 Score.
-In our context, the recall is the percentage of appartments we correctly predicted as professional.
-We use the F1 score as ameasue of the overall performance of the classifier.
+In our context, the aim is to minimize the cost of investigating potential law breakers. In other words, the model should classify the multihost with the lowest False Positive rate (listings classified as multihost, but single host in reality).
 
+To evaluate the quality of our classification model, we will use the standard metrics : 
+
+- recall (to evaluate the FPR)
+- F1 Score (to get an overall metrics of the classifier)
 
 ## II. Analysis
 _(approx. 2-4 pages)_
@@ -82,7 +112,8 @@ _(approx. 2-4 pages)_
 ### Data Exploration
 The dataset has been built via the  web scraping of the AirBnB website, thus we can considere this is a partial dump of the original  database. Formatted as a text file, there are around 100 features available per appartment : price, availability for the next days, picture of the appartment, number of reviews, coordinates, list of offered amenities, etc..
 
-The dataset consists in three tables : the listings informations, the text of the reviews, the timestamp of the reviews and the booking calendar day per day for the next 365 days.
+The dataset consists in four tables : the listings informations, the text of the reviews, the timestamp of the reviews and the booking calendar day per day for the next 365 days.
+
 We will use the first three items to build our model.
 
 
@@ -117,7 +148,7 @@ Looking at the dataset, we can see the distribution of appartments per multiple 
 |:--:|
 |![](./img/listings_per_host.png){ width=300px }|
 
-There are around one third of active listing that are offered by an host who owns more than one listing. Those are our target population, i.e the professional renting full appartments.
+There are around one third of active listing that are offered by an host who owns more than one listing. Those are our target population, i.e  professionals renting full appartments.
 
 
 Number of reviews per listings rented|Availability per listings rented
@@ -125,24 +156,8 @@ Number of reviews per listings rented|Availability per listings rented
 |![Listing per hosts](./img/host_listing_counts_reviews.png){ width=300px }|![Listing per hosts](./img/host_listing_availability_30.png){ width=300px } 
 
 
-The above charts show that professional hosts have an higher number of reviews, but a also an higher availability.
+The above charts show that professional hosts have an higher number of reviews, but also an higher availability.
 
-Now we can chekc which features from the listing table are the most relevant to predict the multihosting. For this i use the ${\chi}^2$ test on the numerical values :
-
-
-| XGB best fclass features  |
-|:--:|
-|![](./img/XGB_features_selection.png){ width=500px }|
-
-
-
-|  ${\chi}^2$ best features  |
-|:--:|
-|![](./img/top_features_chi2.png){ width=500px }|
-
-|  XGBoost best features  |
-|:--:|
-|![](./img/top_features_xgb.png){ width=500px }|
 
 
 Multihost PCA on 6 Vectors | Single host PCA on 6 Vectors
@@ -181,7 +196,7 @@ We will thus use the Logistic classifier as benchmark and try to get a recall va
 
 
 
-#%# III. Methodology
+III. Methodology
 _(approx. 3-5 pages)_
 
 ### Data Preprocessing
@@ -190,17 +205,24 @@ In this section, all of your preprocessing steps will need to be clearly documen
 - _Based on the **Data Exploration** section, if there were abnormalities or characteristics that needed to be addressed, have they been properly corrected?_
 - _If no preprocessing is needed, has it been made clear why?_
 
-The main listing does not reauires much preprocessing, if not split the amenities features, which in its original from combine the 100 differents possible amenities (from Dishwasher to children toys).
+- **Main listing**
+The main listing does not requires much preprocessing, if not split the amenities features, which in its original form combine the 100 differents possible amenities (from Dishwasher to children toys) in a single column.
 
-The text reviews require a specific processing.
-We use the **detect_lang** package from google to indentify the language of each review.
-Then, we select the reviews written in english, vectorize them using the TFIDF method and finally reduce the dimensionality via the Principal Components Analsysis.
+- **Text reviews**
+The text reviews do require a specific processing.
+We use the **detect_lang** package from google to identify the language of each review.
+Then, we select the reviews written in english, vectorize them using the TFIDF method and finally reduce the dimensionality via the Principal Components Analsysis for each city.
 
-For the pictures, after having scrapped the pictures from the Airbnb website (110,020 pictures), and converted them into numpy arrays, we implement the following operations :
+- **Appartements pictures**
+For the pictures, after having scrapped the pictures from the Airbnb website (110,020 pictures),we implement the following operations :
 
-- compute the brightness and contrast,
-- compute the 5 top colors via a K-Means clustering on the the RGB features.
-- compute a PCA for the greyscale pictures.
+- compute the brightness and contrast for each picture,
+- compute the 5 top colors via a K-Means clustering on the the RGB features for each picture
+- compute a greyscale numpy array for each picture.
+- compute a PCA for each city.
+
+
+The PCA implementation at the level of the city is justified by the limited computing resources. Otherwise, it would have been optimal to run a PCA on both greyscale picture and TFIDF text vectors on the whole dataset.
 
 
 
@@ -212,15 +234,33 @@ In this section, the process for which metrics, algorithms, and techniques that 
 
 The main challenge for this model is the feature selection. With 300 differentes features, and very low correlation with the target (best correlation, **maximum nights**, scores  ${\rho}$ = 0.145 with the **multi-host** target.)
 
-To select the best features, i used three differents techniques :
 
-- the RandomizedLogisticRegressor from sklearn to extract the best features,
-- KBest features selection based on both Chi2 and FScore,
-- The best F-score features on a basic XGBoost classifier.
+- **Features selection**
+
+Now we can check .
+To select the most relevant features from the listing table to predict the multihosting, i used three differents techniques :
+
+- RandomizedLogisticRegressor,
+- KBest features selection based on Chi2 and FScore,
+- best F-score features from a basic XGBoost classifier.
+
+When those four list are combine, we obtain a list of 100 features.
+
+For this we use the ${\chi}^2$ test on the numerical values :
 
 
-This results in around 100 features.
+|  ${\chi}^2$ best features  |
+|:--:|
+|![](./img/top_features_chi2.png){ width=500px }|
 
+|  XGBoost best features  |
+|:--:|
+|![](./img/top_features_xgb.png){ width=500px }|
+
+
+| XGB best fclass features  |
+|:--:|
+|![](./img/XGB_features_selection.png){ width=500px }|
 
 
 

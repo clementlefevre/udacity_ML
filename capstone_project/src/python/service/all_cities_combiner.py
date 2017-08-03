@@ -30,7 +30,7 @@ for F in FILE:
 
         if F == 'listings':
             filter_cols = ['host_since', 'first_review',
-                           'last_review', 'room_type', 'availability_30', 'price']
+                           'last_review', 'room_type', 'availability_30', 'availability_90', 'price']
 
             df.price = df.price.replace('[\$,)]', '', regex=True).replace(
                 '[(]', '-', regex=True).astype(float)

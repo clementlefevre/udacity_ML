@@ -4,7 +4,7 @@ output:
   html_document: default
 ---
 # Machine Learning Engineer Nanodegree
-## Capstone Project : Forecast appartment bookings for AirBnB Berlin.
+## Capstone Project : Detect professional hosts on AirBnB Europe.
 Clement Lefevre 
 July 31st, 2017
 

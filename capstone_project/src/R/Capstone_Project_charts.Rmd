@@ -1,0 +1,259 @@
+---
+title: "Capstone Project - Global Destination Cities Index Mastercard"
+output: html_notebook
+---
+
+This is an [R Markdown](http://rmarkdown.rstudio.com) Notebook. When you execute code within the notebook, the results appear beneath the code. 
+
+Try executing this chunk by clicking the *Run* button within the chunk or by placing your cursor inside it and pressing *Ctrl+Shift+Enter*. 
+
+```{r}
+library(tidyverse)
+library(stringr)
+library(tabulizer)
+library(ggthemes)
+library(extrafont)
+library(animation)
+library(lubridate)
+library(ggjoy)
+library(pander)
+loadfonts()
+
+
+airBColor<- '#ff5a5f'
+airBColor2<- '#008489'
+```
+
+
+```{r}
+get_path_var<- function(filename){
+ path<-''
+  path$pdf <- paste('../../report/img/',filename,'.pdf',sep='')
+  path$embed<- paste('../../report/img/',filename,'_embed.pdf',sep='')
+  path$png<- paste(filename,'.png',sep='')
+  return (path)
+}
+
+save_to_png <- function(path){
+    #Embed the fonts
+  embed_fonts(path$pdf, outfile=path$embed)
+  im.convert(path$embed, output = path$png, extra.opts="-density 600")
+  file.rename(path$png,paste('../../report/img/',path$png,sep=''))
+  file.remove(path$pdf)
+  file.remove(path$embed)
+}
+
+bold <- function(x) {paste('{\\textbf{',x,'}}', sep ='')}
+
+proper=function(x) paste0(toupper(substr(x, 1, 1)), tolower(substring(x, 2)))
+
+```
+
+
+# Master Card Plot
+```{r}
+#extract_table_from_master_pdf()
+
+df_destination_overall<- read.csv('../../data/global_destination_index_overall.csv',stringsAsFactors = FALSE)
+```
+
+```{r}
+path <- get_path_var('capital_report_master_card')
+pdf(path$pdf, width=8,height=8)
+
+european_airbnb_cities<-c("Athens","Amsterdam","Barcelona","Berlin","Dublin","London","Paris","Madrid","Rome","Lagos",
+                          "Vienna")
+ggplot(df_destination_overall,aes(x=Int.l.Overnight.Visitor.Spend,y=Int.l.Overnight.Visitors,label=Destination))+ geom_point(colour=airBColor,size=.75,alpha=1)  +
+  geom_text(aes(label=ifelse((Destination %in% european_airbnb_cities)|(Int.l.Overnight.Visitor.Spend>10) &(Destination!="Kuala Lumpur"),as.character(Destination),'')),hjust=-.25, vjust=0.25,size=3,family="Helvetica" )+
+  theme(text = element_text(size=14, family="CM Roman"))+labs(x='Total spending overnight visitors (US$ billions)',y='Total overnight visitors (millions)')+ stat_smooth(method="lm", se=FALSE,color=airBColor2,linetype="dotted", size=.5)+ xlim(0, 32)+ylim(0,22)
+
+dev.off()
+save_to_png(path)
+```
+# Benchmark AirBnB Cities
+```{r}
+df<-read.csv('../../data/all_cities/listings_all.csv',stringsAsFactors = FALSE)
+df<- df %>% mutate_at(c('host_since','first_review','last_review'), funs(new_=ymd(.)))
+head(df)
+dim(df)
+df<-df%>% group_by(city) %>% mutate(max_review_date=max(last_review_new_,na.rm=TRUE))
+
+df<-df %>% mutate(since_last_review = max_review_date-last_review_new_)
+
+df.profi<-df %>% filter((availability_90>0)&(price<200)&(since_last_review<60))
+df.profi$city <- sapply(df.profi$city,proper)
+df.profi$city <- as.factor(df.profi$city)
+df.profi.appart<-df.profi %>% filter(room_type=="Entire home/apt")
+
+```
+
+
+```{r}
+path <- get_path_var('city_benchmark_availability_30')
+pdf(path$pdf, width=8,height=8)
+
+ggplot(df.profi.appart,aes(x=availability_30,y=city))+ geom_joy(fill = airBColor)+theme(text = element_text(size=14, family="CM Roman"))+labs(x='Nights available next 30 days')+scale_y_discrete(name="", limits = rev(levels(df.profi.appart$city)))
+
+dev.off()
+save_to_png(path)
+```
+
+```{r}
+path <- get_path_var('city_benchmark_price')
+pdf(path$pdf, width=8,height=8)
+ggplot(df.profi.appart,aes(x=price,y=city))+ geom_joy(fill = airBColor2)+theme(text = element_text(size=14, family="CM Roman"),axis.title.y=element_blank())+labs(x='Price per night($)')+scale_y_discrete(name="", limits = rev(levels(df.profi$city)))
+
+dev.off()
+save_to_png(path)
+```
+## Group by room_type
+
+```{r}
+path <- get_path_var('city_benchmark_room_type')
+pdf(path$pdf, width=8,height=8)
+
+df.profi$city<-as.factor(df.profi$city)
+g <- ggplot(df.profi, aes(city))
+g+ geom_bar(aes(fill = room_type))+ coord_flip() +scale_fill_manual("legend", values = c("Entire home/apt" = airBColor, "Private room" = airBColor2,"Shared room" = "grey"))+theme(text = element_text(size=14, family="CM Roman"),legend.title=element_blank(),axis.title.y=element_blank())+labs(y=' ')+scale_x_discrete(name="", limits = rev(levels(df.profi$city)))
+
+dev.off()
+save_to_png(path)
+```
+
+
+# Group by host listing counts
+```{r}
+df.listing<- read.csv('../../data/listing_for_EDA.csv',stringsAsFactors = FALSE)
+```
+
+```{r}
+path <- get_path_var('host_listing_counts_reviews')
+pdf(path$pdf, width=8,height=8)
+
+df.listing<- df.listing %>% filter((host_listings_count<10)&(host_listings_count>0)&(availability_90>0))
+ggplot(df.listing ,aes(x=as.factor(host_listings_count),y=reviews_per_month,group=host_listings_count))+ geom_boxplot(fill=airBColor)+theme(text = element_text(size=14, family="CM Roman"),legend.title=element_blank())+labs(x='listings per host',y='number of reviews per month')
+
+dev.off()
+save_to_png(path)
+
+```
+
+
+```{r}
+path <- get_path_var('host_listing_availability_30')
+pdf(path$pdf, width=8,height=8)
+
+df.listing<- df.listing %>% filter((host_listings_count<10)&(host_listings_count>0)&(availability_30>0))
+ggplot(df.listing ,aes(x=as.factor(host_listings_count),y=availability_30,group=host_listings_count))+ geom_boxplot(fill=airBColor2)+theme(text = element_text(size=14, family="CM Roman"),legend.title=element_blank())+labs(x='listings per host',y='Availability next 30 days')
+
+dev.off()
+save_to_png(path)
+
+```
+
+```{r}
+path <- get_path_var('listing_counts')
+pdf(path$pdf, width=8,height=8)
+
+df.listing<- df.listing %>% filter((host_listings_count<20)&(host_listings_count>0)&(availability_30>0)&(availability_30<27))
+g <- ggplot(df.listing, aes(as.factor(host_listings_count)))
+g+ geom_bar(fill=airBColor2)+theme(text = element_text(size=14, family="CM Roman"),legend.title=element_blank())+labs(x='listings owned by host',y='total listings')
+
+dev.off()
+save_to_png(path)
+```
+
+## Distributioon of missing features
+```{r}
+df.listing.raw<-read.csv('../../data/insideAirBnB/listings.csv',stringsAsFactors = FALSE)
+df.listing.raw$last_review<-ymd(df.listing.raw$last_review)
+df.missing.values <- as.data.frame(colMeans(is.na(df.listing.raw)))
+df.missing.values<-tibble::rownames_to_column(data.frame(df.missing.values),'feature')
+colnames(df.missing.values)<-c('Features','percent.missing')
+```
+
+```{r}
+path <- get_path_var('missing_values_listings')
+pdf(path$pdf, width=8,height=8)
+
+ggplot(df.missing.values,aes(x=percent.missing*100)) + geom_histogram()+theme(text = element_text(size=14, family="CM Roman"),legend.title=element_blank())+labs(x='% values missing',y='number of features')
+dev.off()
+save_to_png(path)
+```
+
+
+## Non active hosts
+```{r}
+date_scraped <-as.Date('2017-05-01')
+
+listing.raw.summary<- df.listing.raw %>% group_by(room_type) %>% summarise(total_listing = n(), '% reviewed' =round( mean(!is.na(last_review))*100,2),'% active'=round(mean(((date_scraped-last_review)<60)&(availability_90>0),na.rm=TRUE)*100,2))
+names(listing.raw.summary) <- pandoc.strong.return(names(listing.raw.summary))
+pander(listing.raw.summary, style = 'rmarkdown',emphasize.strong.cols = 1)
+
+```
+
+
+```{r}
+
+path <- get_path_var('listings_per_host')
+pdf(path$pdf, width=8,height=8)
+
+g <- ggplot(df.listing, aes(as.factor(host_listings_count)))
+g+ geom_bar(fill=airBColor)+theme(text = element_text(size=14, family="CM Roman"),legend.title=element_blank())+labs(x='listings own by host',y='total listings')
+
+dev.off()
+save_to_png(path)
+```
+
+# Reviews language
+
+```{r}
+df_language_reviews <- read.csv('../../data/reviews_with_lang.csv',stringsAsFactors = FALSE)
+group.languages.reviews <- df_language_reviews %>% group_by(language) %>% summarise(reviews = n())
+```
+
+
+```{r}
+
+path <- get_path_var('group_language_reviews')
+pdf(path$pdf, width=8,height=8)
+
+ggplot(group.languages.reviews,aes(x=reorder(language,-reviews),y=reviews))+ geom_bar(stat = 'identity',fill=airBColor)+theme(text = element_text(size=14, family="CM Roman"),legend.title=element_blank(),axis.title=element_blank(),axis.text.x = element_text(angle = 90, hjust = 1,vjust = 0))+labs(x='')
+
+dev.off()
+save_to_png(path)
+```
+
+# Ratio mulltihost per city for active full appartments
+
+```{r}
+df_all_cities <- read.csv('../../data/all_cities/listing_cleansed_fillna.csv',stringsAsFactors = FALSE)
+
+
+df_all_cities$city <- sapply(df_all_cities$city,proper)
+df_all_cities<-df_all_cities %>% mutate(multihost,multihost=ifelse(multihost==0,'single_host','multi_host'))
+
+```
+
+```{r}
+path <- get_path_var('cities_multihosting_ratio')
+pdf(path$pdf, width=8,height=8)
+
+group.multihost <- df_all_cities %>% group_by(city,multihost) %>% summarise(total = n())
+group.multihost$city<-as.factor(group.multihost$city)
+group.multihost<-group.multihost %>% spread(multihost,total) %>% mutate(ratio_multihosts= multi_host/(multi_host+single_host)*100, total_listings =multi_host+single_host ) 
+ggplot(group.multihost,aes(x=city,y=ratio_multihosts,size=total_listings))+geom_point(color=airBColor2)+ coord_flip()+scale_x_discrete(name="", limits = rev(levels(group.multihost$city)))+labs(y='% multihost')+theme(text = element_text(size=14, family="CM Roman")) +scale_size_continuous(range = c(1, 10))
+
+dev.off()
+save_to_png(path)
+```
+
+## Print TFIDF for multihost classification
+```{r}
+df_tfidf<-read.csv('../../data/insideAirBnB/benchmark_capitals/berlin/tfidf_multibayens_result.csv',sep=';',header = FALSE)
+colnames(df_tfidf)<-c('Value','Single Host','Value','Multihost')
+names(df_tfidf) <- pandoc.strong.return(names(df_tfidf))
+pander(df_tfidf, style = 'rmarkdown',emphasize.strong.cols = 1)
+
+```
+

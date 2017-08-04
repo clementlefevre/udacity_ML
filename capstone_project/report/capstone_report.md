@@ -37,7 +37,7 @@ Full appartments availability coming 30 days|Full appartments prices
 :-------------------------:|:-------------------------:
 ![title 1](./img/city_benchmark_availability_30.png){width=300px} |  ![title2 ](./img/city_benchmark_price.png){width=300px} 
 
-In term of price and availability, Berin ranks in the average value on the european scale.
+In term of price and availability, Berlin ranks in the average value on the european scale.
 
 
 Since may 2016, the renting of full appartments is strictly regulated in Berlin : it requires an authorization from the city Authorities, In 2016, [only 58 authorizations have been delivered by the city for 800 applications](http://www.salon.com/2017/06/30/how-the-berlin-government-could-rein-in-airbnb-and-protect-local-housing_partner/).
@@ -101,6 +101,17 @@ To evaluate the quality of our classification model, we will use the standard me
 - recall (to evaluate the FPR)
 - F1 Score (to get an overall metrics of the classifier)
 
+
+#### Definition of the recall (or sensitivity or true positive rate - TPR):
+
+recall = $\frac{\sum\ \text{True Positive}}{\sum\ \text{True Positive}+ \sum\ \text{False Negative}}$
+
+
+#### Definition of the F1-score .
+
+F1-score = $\frac{2\times{True Positive}}{2\times\text{True Positive}+\text{False Positive}+\text{False Negative}}$
+
+
 ## II. Analysis
 _(approx. 2-4 pages)_
 
@@ -135,6 +146,9 @@ Then, we have to remove the 'zombie' host, online listing that are not active an
 |  **Private room**   |       10011       |     76.65      |     28.1     |
 |   **Shared room**   |        280        |     69.29      |    30.42     |
 
+
+When all data are combined, we get a list of active listings for 14 european capitals with 56879 rows and 411 columns.
+
 ### Exploratory Visualization
 
 Looking at the dataset, we can see the distribution of appartments per multiple ownership :
@@ -164,13 +178,39 @@ English is the overwhemly language for reviews, we will focus then on it for the
 
 
 ### Algorithms and Techniques
-We implement three different classification algorithm :
+We implement three different classification algorithms :
 
-- a standard logistic regression to be used as a benchmark,
-- a decision tree based algorithm : Xtra Gradient Boosting (XGBoost) Classifier : does not require much feature engineering nor hyper-parameters tuning. On top of that it is fast.
-- Neural Nets based algorithm with a binary classifier using the Keras wrapper with a Tensorflow backend.
+#### a standard logistic regression to be used as a benchmark :
+
+- Pros : 
+--The fitted model can be formatted as probabilities, which eases its understanding, and Confidence Intervals can be computed.
+--When the features are lineary separable and are limited, it tends to perform pretty well.
+--it can be updated with additional training data without hassle.
+
+- Cons : 
+--if the features are not lineary separable, then it might not be the best approach.
+--it does not handle well categorical features. oes not handle the multiclass well.
+--it suffers when there is multicollinearity amongst the features.
+
+#### a decision tree based algorithm : Xtra Gradient Boosting (XGBoost) Classifier :
+
+- Pros : 
+--does not require much feature engineering nor hyper-parameters tuning. On top of that it is fast.
+- Cons : 
+--it tends to overfit on the training set, but can be controlled via the learning rate and tree depth parameters.
+
+#### Neural Nets based algorithm with a binary classifier using the Keras wrapper with a Tensorflow backend.
+
+- Pros : 
+--They can overperform other classifier with enough data and well designed layers.
+- Cons : 
+--require lots of computing power (GPU), slow on regular CPU.
+ 
 
 A Support vector machine approach has been excluded due to its heavy hyper parameter tuning.
+
+
+As the data are weakly correlated with our target, we use a lot of features, and check if some interesting combinations of them can improve the model. The XGB algorithm has the advantage to select itself the best features, and so does the neural network.
 
 
 ### Benchmark
@@ -220,27 +260,7 @@ Using a multinomial Bayesian classifier, we can get a rough idea of the text rev
 | **-11.84** |       mathia wa       |  -7.032   |     veri help     |
 | **-11.78** |       marku wa        |  -7.042   |     wa clean      |
 | **-11.74** |       live flat       |   -7.05   |    recommend -    |
-| **-11.7**  |    quickli answer     |  -7.069   |      gave us      |
-| **-11.65** |       week felt       |  -7.083   |  would recommend  |
-| **-11.63** | neighborhood friendli |  -7.126   |     berlin -      |
-| **-11.6**  |      suggest wa       |  -7.147   |    minut walk     |
-| **-11.59** |    commun clearli     |  -7.161   |      - veri       |
-| **-11.56** |     stay neuklln      |  -7.169   |    well equip     |
-| **-11.56** |     stay wa also      |  -7.184   |     veri well     |
-| **-11.56** |      left us map      |  -7.206   |    stay apart     |
-| **-11.56** |    journey berlin     |  -7.221   |     veri good     |
-| **-11.54** |     wa veri relax     |  -7.224   |       - wa        |
-| **-11.53** |   comfort wellequip   |  -7.225   |     place wa      |
-| **-11.53** |     ha love apart     |  -7.231   |    locat veri     |
-| **-11.52** |   nice flat everyth   |  -7.251   |    apart veri     |
-| **-11.52** |      neuklln wa       |  -7.252   |      stay -       |
-| **-11.51** |     nice place wa     |   -7.26   |     come back     |
-| **-11.51** |        klau wa        |  -7.268   | highli recommend  |
-| **-11.5**  |   home neighborhood   |  -7.297   |     veri nice     |
-| **-11.5**  |      person left      |  -7.299   |    great apart    |
-| **-11.49** |    veri easi flat     |  -7.302   |     thi place     |
-| **-11.49** |    recommend sure     |  -7.305   |      thi wa       |
-| **-11.47** |     surround veri     |  -7.307   | definit recommend |
+
 
 
 PCA on text reviews :
@@ -348,7 +368,6 @@ For this we use the ${\chi}^2$ test on the numerical values :
 
 
 
-
 ### Refinement
 I used the different combination of features :
 
@@ -368,10 +387,19 @@ And applied them on classification models :
 
 Before applying the train/test split, i first rebalanced the original dataset (1/3 multihost vs 2/3 single host) to get a 50/50 distribution.
 
-
 Using a standard Logistic Regressor on the features provided by the RandomizedLogisticRegressor, we can reach an accuracy of 76%, with a recall of 77%. Lowest results were provided by the Random Forest without tuning, and the Keras Neural net got the same result as the logistics regressor.
 
 It is finally the XGBoost Classifier that got both 80% in accuracy and recall.
+
+#### Hyper parameter tuning
+
+For both XGBoost and the neural network, i tried different combination of parameters.
+
+##### Keras Neural net
+For Keras, i tried the adam optimizer wit default settings  and with a learning rate of 0.0001.
+I also tried the RMSEprop optimizer with defaults settings  and
+
+
 
 
 

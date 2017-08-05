@@ -385,19 +385,64 @@ And applied them on classification models :
 - A Neural Net with a relu activation in input and a sigmoid in output with an adam optimizer.
 
 
-Before applying the train/test split, i first rebalanced the original dataset (1/3 multihost vs 2/3 single host) to get a 50/50 distribution.
+#### Rebalancing the dataset
 
-Using a standard Logistic Regressor on the features provided by the RandomizedLogisticRegressor, we can reach an accuracy of 76%, with a recall of 77%. Lowest results were provided by the Random Forest without tuning, and the Keras Neural net got the same result as the logistics regressor.
+One common challenge faced when implementing a classifier is the unbalance of the dataset.
 
-It is finally the XGBoost Classifier that got both 80% in accuracy and recall.
+This is the case here, when looking at the full dataset :
+
+| Full dataset balance (target : is multihost)  |
+|:--:|
+|![](./img/dataset_balance.png)|
+
+It is clear that the model would tend to generate a better recall on the single hosts rather the multihosts.
+
+Thus, before applying the train/test split, i first rebalanced the original dataset (1/3 multihost vs 2/3 single host) to get a 50/50 distribution using the solution provided [here](https://stackoverflow.com/questions/23455728/scikit-learn-balanced-subsampling)
+
+
+
+#### Training and testing set
+
+I used a standard **80%-20% ratio** to split the original dataset.
+
 
 #### Hyper parameter tuning
 
-For both XGBoost and the neural network, i tried different combination of parameters.
+###### XGBoost
+For the XGBoost classifier, i used the GridSearch method from scikit-learn combined with a 5 Folds Cross-Validation to extract the best parameters.
+Here is an overview of the parameters and theirs value i combined :
 
-##### Keras Neural net
-For Keras, i tried the adam optimizer wit default settings  and with a learning rate of 0.0001.
-I also tried the RMSEprop optimizer with defaults settings  and
+
+**parameter** | **values** 
+---- | ---- 
+max_depth| _[5,9,12]_ 
+min_child_weight | _[1,2,5]_
+learning_rate | _[0.01,0.1]_
+gamma | _[0.0,0.1,1]_
+n_estimators | _[100,200,500]_
+
+
+###### Keras Neural net
+
+
+_layers parameters :_
+
+
+**parameter** | **values** 
+---- | ---- 
+input layer size| _[23,64,128,512]_
+input layer activation function | _relu,tanh_
+dropout rate (all layers) | _[0.2,0.5,0.8]_
+hidden layer activation | _relu,tanh_
+output layer activation | _sigmoid_
+
+
+_optimizers :_
+
+**name** | **values**
+---- | ---- 
+adam | _standard, lr=0.0001_
+RMSProp | _standard, lr=0.0001_
 
 
 
@@ -407,6 +452,12 @@ I also tried the RMSEprop optimizer with defaults settings  and
 _(approx. 2-3 pages)_
 
 ### Model Evaluation and Validation
+
+Using a standard Logistic Regressor on the features provided by the RandomizedLogisticRegressor, we can reach an accuracy of 76%, with a recall of 77%. Lowest results were provided by the Random Forest without tuning, and the Keras Neural net got the same result as the logistics regressor.
+
+It is finally the XGBoost Classifier that got both 80% in accuracy and recall.
+
+
 With a cross-validation of the training set on 5 folds on a 12231 samples (training set)  and 8154 testing samples, we get the following results :
 
 _Recall:_ 0.79% (+/- 0.02)
@@ -446,17 +497,24 @@ _(approx. 1-2 pages)_
 ### Free-Form Visualization
 When looking at the first 2 PC of the entire features set PCA :
 
-|  PC1 vs PC2 all features |
+|  PC1 vs PC2 all features on 5000 random listings|
 |:--:|
 |  ![](./img/PCA_all_features.png){ width=300px } |
 
-From this chart, it is obvious that the two categories are hardly separable.
+From this chart, it is obvious that the two categories are hardly separable. We can also notice the city pattern, characterized by the latitude factor, as listing form parallel line.
 
-
+Finally, we can have a look at which features have strong relationship with multihosting :
 
 |  Top 10 feature for the XGB Classifier |
 |:--:|
 |  ![](./img/XGB_final_Top_features_fscore.png){ width=300px } |
+
+Fscore sums up how many times each feature is split on during the training.
+Thus we do not have insight whether it increae or decrease the multihosting target, but gives an idea how important the feature is in the model :
+
+- Here, the "age" of the guest ( _"host since", "first review"_ ) seems to significantly weight.
+- The listing occupancy, characterized by  _"frequency of review", "availability_365"_ 
+- Finally, the distance to city center has a influence on the model.
 
 
 
@@ -467,12 +525,29 @@ Though, the recall obtain (80% at best) is not satisfying.
 
 Morevoer, I did put heavy expectation on the neural net, but after hundreds of iteration the model stuck on the validation recall of 76%, i.e. as good as a basic logistics regression.
 
-There is a major flaw in my project : the defition of professional is per se not accurate ; one professional might offer only one listing on Airbnb, or use two differents identities to rent its appartments.
+There is a major flaw in my project : the definition of professional, i.e _multihost_ is per se not accurate ; one professional might offer only one listing on Airbnb, or use two differents identities to rent its appartments.
+
+As too often in such project, the data gathering and wrangling took more than 80% of the overall time.
+Building a pipeline for retrieve and process the data for the thirteen cities was a funny, though slow, thing to implement.
+
+The most challenging, but also interesting part was the keras neural net to optimize. I could not figure out why the net did not break the 76% recall threshold. My guess is that the dimension of the dataset is not well sized : too many features for too few entries. I tried with a limited number of features (13), but still the performance did not match our logistic regressor benchmark.
+
+
+![Hokusai : Kajikazawa in Kai province](./img/Hokusai_Kajikazawa_in_Kai_province.jpg){ width=300px } 
+
+Finally, i would compare building a machine learning model to the art of fishing : you first check the state of the sea, put your fishing lines, wait, check, put the lines somewere else until fishes come. In a word : it takes patience and perseverance.
 
 
 
 ### Improvement
 If my time was not constrained, i would add more features : profile pictures of the guest, define a list of touristic/interest location per city and compute the distance to it.
+
+An other approach could be to implement three parallel classifiers :
+- one on the basic features,
+- on the text reviews using LSTM-based neural net classifier,
+- and one using a Conv2D-based neural net classifier on the appartment picture.
+
+And combine them using the stacking technique.
 
 I used the *tpot* python package to identify the best model possible (excluding the deep learning option), and the best proposal was the XGBoost. As the categories are definitively not lineary separable, i would put more emphasis on a SVM classifier with a RBF kernel, which requires lots of hyper-parameter tuning.
 
